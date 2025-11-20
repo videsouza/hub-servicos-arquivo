@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização de Boxes - Arquivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .legend-label {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .boxes-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        .section {
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 0 0 3px white;
+        }
+
+        .box:hover {
+            transform: scale(1.15);
+            z-index: 100;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .box.empty {
+            background-color: #e0e0e0;
+            color: #999;
+        }
+
+        .tooltip {
+            display: none;
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 10000;
+            max-width: 300px;
+            pointer-events: none;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .tooltip.show {
+            display: block;
+        }
+
+        .tooltip-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+        }
+
+        .tooltip-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            gap: 15px;
+        }
+
+        .tooltip-sit {
+            font-weight: 500;
+        }
+
+        .tooltip-count {
+            color: #4CAF50;
+        }
+
+        .tooltip-percent {
+            color: #FFC107;
+            font-size: 11px;
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Visualização de Boxes do Arquivo</h1>
+            <a href="/" class="back-btn">← Novo Upload</a>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Carregando visualização...</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <p class="subtitle">Total de 7000 boxes organizados em seções de 7x7</p>
+
+            <div class="legend" id="legend"></div>
+
+            <div class="boxes-grid" id="boxesContainer"></div>
+
+            <div class="stats">
+                <h2>Estatísticas Gerais</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">7000</div>
+                        <div class="stat-label">Total de Boxes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="boxesOcupados">0</div>
+                        <div class="stat-label">Boxes Ocupados</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="boxesVazios">7000</div>
+                        <div class="stat-label">Boxes Vazios</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalDocs">0</div>
+                        <div class="stat-label">Total de Documentos</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Documentos por Situação</h3>
+                <div class="stats-grid" id="statsSituacoes"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Recuperar dados do sessionStorage
+        const dataStr = sessionStorage.getItem('boxesData');
+        if (!dataStr) {
+            alert('Nenhum dado encontrado. Redirecionando...');
+            window.location.href = '/';
+        }
+
+        const data = JSON.parse(dataStr);
+        const boxesData = data.boxes_data;
+        const coresMap = data.mapa_cores;
+        const todasSituacoes = data.colunas_situacoes;
+        const totaisPorSituacao = data.totais_por_situacao;
+
+        // Ocultar loading e mostrar conteúdo
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        // Criar legenda
+        const legend = document.getElementById('legend');
+        
+        // Adicionar item VAZIO
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'legend-item';
+        emptyItem.innerHTML = `
+            <div class="legend-color" style="background-color: #e0e0e0;"></div>
+            <span class="legend-label">VAZIO</span>
+        `;
+        legend.appendChild(emptyItem);
+
+        // Adicionar outras situações
+        todasSituacoes.forEach(sit => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `
+                <div class="legend-color" style="background-color: ${coresMap[sit]};"></div>
+                <span class="legend-label">${sit}</span>
+            `;
+            legend.appendChild(item);
+        });
+
+        // Função para calcular cor do box
+        function calcularCorBox(box) {
+            if (box.total === 0) {
+                return '#e0e0e0';
+            }
+
+            const situacoes = Object.keys(box.percentuais);
+            if (situacoes.length === 1) {
+                return coresMap[situacoes[0]];
+            }
+
+            let sitMaior = '';
+            let percentMaior = 0;
+            for (const [sit, percent] of Object.entries(box.percentuais)) {
+                if (percent > percentMaior) {
+                    percentMaior = percent;
+                    sitMaior = sit;
+                }
+            }
+
+            return coresMap[sitMaior];
+        }
+
+        // Criar gradiente para boxes com múltiplas situações
+        function criarGradienteBox(box) {
+            if (box.total === 0 || Object.keys(box.percentuais).length === 1) {
+                return calcularCorBox(box);
+            }
+
+            const situacoes = Object.entries(box.percentuais).sort((a, b) => b[1] - a[1]);
+            const cores = situacoes.map(([sit, perc]) => `${coresMap[sit]} ${perc}%`);
+            return `linear-gradient(to right, ${cores.join(', ')})`;
+        }
+
+        // Gerar seções de boxes
+        const boxesContainer = document.getElementById('boxesContainer');
+        const boxesPorSecao = 49;
+        const totalSecoes = Math.ceil(7000 / boxesPorSecao);
+
+        let boxesOcupados = 0;
+        let totalDocumentos = 0;
+
+        for (let secao = 0; secao < totalSecoes; secao++) {
+            const inicioBox = secao * boxesPorSecao + 1;
+            const fimBox = Math.min((secao + 1) * boxesPorSecao, 7000);
+
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'section';
+
+            const sectionTitle = document.createElement('div');
+            sectionTitle.className = 'section-title';
+            sectionTitle.textContent = `Boxes ${inicioBox} - ${fimBox}`;
+            sectionDiv.appendChild(sectionTitle);
+
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'grid';
+
+            for (let i = inicioBox; i <= fimBox; i++) {
+                const boxData = boxesData[i];
+                const boxDiv = document.createElement('div');
+                boxDiv.className = 'box';
+
+                if (boxData.total === 0) {
+                    boxDiv.classList.add('empty');
+                } else {
+                    boxesOcupados++;
+                    totalDocumentos += boxData.total;
+                }
+
+                boxDiv.textContent = i;
+                boxDiv.style.background = criarGradienteBox(boxData);
+
+                boxDiv.dataset.boxNum = i;
+                boxDiv.dataset.total = boxData.total;
+                boxDiv.dataset.situacoes = JSON.stringify(boxData.situacoes);
+                boxDiv.dataset.percentuais = JSON.stringify(boxData.percentuais);
+
+                gridDiv.appendChild(boxDiv);
+            }
+
+            sectionDiv.appendChild(gridDiv);
+            boxesContainer.appendChild(sectionDiv);
+        }
+
+        // Atualizar estatísticas
+        document.getElementById('boxesOcupados').textContent = boxesOcupados.toLocaleString('pt-BR');
+        document.getElementById('boxesVazios').textContent = (7000 - boxesOcupados).toLocaleString('pt-BR');
+        document.getElementById('totalDocs').textContent = totalDocumentos.toLocaleString('pt-BR');
+
+        // Adicionar cards de situações
+        const statsSituacoes = document.getElementById('statsSituacoes');
+        todasSituacoes.forEach(sit => {
+            const total = totaisPorSituacao[sit] || 0;
+            const cor = coresMap[sit];
+
+            const statItem = document.createElement('div');
+            statItem.className = 'stat-item';
+            statItem.style.borderLeft = `4px solid ${cor}`;
+            statItem.innerHTML = `
+                <div class="stat-value" style="color: ${cor};">${total.toLocaleString('pt-BR')}</div>
+                <div class="stat-label">${sit}</div>
+            `;
+            statsSituacoes.appendChild(statItem);
+        });
+
+        // Tooltip interativo
+        const tooltip = document.getElementById('tooltip');
+
+        document.querySelectorAll('.box').forEach(box => {
+            box.addEventListener('mouseenter', function(e) {
+                const boxNum = this.dataset.boxNum;
+                const total = parseInt(this.dataset.total);
+                const situacoes = JSON.parse(this.dataset.situacoes);
+                const percentuais = JSON.parse(this.dataset.percentuais);
+
+                let tooltipHTML = `<div class="tooltip-title">Box ${boxNum}</div>`;
+
+                if (total === 0) {
+                    tooltipHTML += '<div class="tooltip-item"><span>Status: VAZIO</span></div>';
+                } else {
+                    tooltipHTML += `<div class="tooltip-item"><strong>Total: ${total} documento(s)</strong></div>`;
+
+                    const situacoesOrdenadas = Object.entries(situacoes).sort((a, b) => b[1] - a[1]);
+
+                    situacoesOrdenadas.forEach(([sit, count]) => {
+                        const percent = percentuais[sit].toFixed(1);
+                        tooltipHTML += `
+                            <div class="tooltip-item">
+                                <span class="tooltip-sit">${sit}</span>
+                                <span>
+                                    <span class="tooltip-count">${count}</span>
+                                    <span class="tooltip-percent">(${percent}%)</span>
+                                </span>
+                            </div>
+                        `;
+                    });
+                }
+
+                tooltip.innerHTML = tooltipHTML;
+                tooltip.classList.add('show');
+                posicionarTooltip(e);
+            });
+
+            box.addEventListener('mousemove', function(e) {
+                if (tooltip.classList.contains('show')) {
+                    posicionarTooltip(e);
+                }
+            });
+
+            box.addEventListener('mouseleave', function() {
+                tooltip.classList.remove('show');
+            });
+        });
+
+        function posicionarTooltip(e) {
+            requestAnimationFrame(() => {
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const padding = 20;
+
+                let left = e.clientX + 15;
+                let top = e.clientY + 15;
+
+                if (left + tooltipRect.width + padding > window.innerWidth) {
+                    left = e.clientX - tooltipRect.width - 15;
+                }
+
+                if (left < padding) {
+                    left = padding;
+                }
+
+                if (top + tooltipRect.height + padding > window.innerHeight) {
+                    top = e.clientY - tooltipRect.height - 15;
+                }
+
+                if (top < padding) {
+                    top = e.clientY + 15;
+                    if (top + tooltipRect.height + padding > window.innerHeight) {
+                        top = (window.innerHeight - tooltipRect.height) / 2;
+                    }
+                }
+
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            });
+        }
+    </script>
+</body>
+</html>
