@@ -12,102 +12,107 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #f8f9fa;
             min-height: 100vh;
-            padding: 20px;
+            color: #2c3e50;
         }
 
         .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e1e4e8;
+            padding: 32px 24px;
+            margin-bottom: 48px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .header h1 {
-            font-size: 42px;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 32px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
 
         .header p {
-            font-size: 18px;
-            opacity: 0.9;
+            font-size: 16px;
+            color: #6c757d;
+            font-weight: 400;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 0 24px 48px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
         }
 
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
         }
 
         .service-card {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: all 0.3s;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.2s ease;
             cursor: pointer;
             position: relative;
-            overflow: hidden;
-        }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         }
 
         .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: #0366d6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
         }
 
         .service-card.disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
+            background: #fafbfc;
         }
 
         .service-card.disabled:hover {
             transform: none;
+            box-shadow: none;
+            border-color: #e1e4e8;
+        }
+
+        .service-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
 
         .service-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        .service-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .service-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            font-size: 14px;
+            font-size: 32px;
+            line-height: 1;
         }
 
         .service-status {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .status-active {
@@ -116,8 +121,23 @@
         }
 
         .status-coming {
-            background: #fff3cd;
-            color: #856404;
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #e1e4e8;
+        }
+
+        .service-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .service-description {
+            color: #6c757d;
+            line-height: 1.6;
+            font-size: 14px;
         }
 
         .modal {
@@ -127,11 +147,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .modal.show {
@@ -141,80 +162,83 @@
         .modal-content {
             background: white;
             padding: 40px;
-            border-radius: 20px;
+            border-radius: 16px;
             max-width: 600px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
         }
 
         .modal-close {
             position: absolute;
             top: 20px;
             right: 20px;
-            font-size: 30px;
+            font-size: 24px;
             cursor: pointer;
-            color: #999;
+            color: #6c757d;
             background: none;
             border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .modal-close:hover {
-            background: #f0f0f0;
-            color: #333;
+            background: #f8f9fa;
+            color: #1a1a1a;
         }
 
         .modal-title {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
         }
 
         .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 60px 40px;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 48px 32px;
             text-align: center;
-            background: #f8f9ff;
-            transition: all 0.3s;
+            background: #fafbfc;
+            transition: all 0.2s;
             cursor: pointer;
             margin: 20px 0;
         }
 
         .upload-area:hover {
-            background: #eef1ff;
-            border-color: #764ba2;
+            background: #f1f3f5;
+            border-color: #adb5bd;
         }
 
         .upload-area.dragover {
-            background: #e0e7ff;
-            border-color: #4f46e5;
-            transform: scale(1.02);
+            background: #e7f5ff;
+            border-color: #0366d6;
         }
 
         .upload-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
         }
 
         .upload-text {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 16px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
             font-weight: 500;
         }
 
         .upload-hint {
-            font-size: 14px;
-            color: #666;
+            font-size: 13px;
+            color: #6c757d;
         }
 
         input[type="file"] {
@@ -222,59 +246,59 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0366d6;
             color: white;
             border: none;
-            padding: 15px 40px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             width: 100%;
-            margin-top: 20px;
-            transition: all 0.3s;
+            margin-top: 16px;
+            transition: all 0.2s;
             display: none;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            background: #0256c4;
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
 
         .file-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f0f9ff;
-            border-radius: 10px;
+            margin-top: 16px;
+            padding: 16px;
+            background: #f1f3f5;
+            border-radius: 8px;
             display: none;
+            border-left: 3px solid #0366d6;
         }
 
         .file-name {
-            font-weight: 600;
-            color: #1e40af;
-            margin-bottom: 5px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            font-size: 14px;
         }
 
         .file-size {
-            font-size: 14px;
-            color: #666;
+            font-size: 13px;
+            color: #6c757d;
         }
 
         .loader {
             display: none;
-            margin: 30px auto;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #667eea;
+            margin: 24px auto;
+            border: 3px solid #f1f3f5;
+            border-top: 3px solid #0366d6;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
@@ -283,30 +307,59 @@
         }
 
         .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
             display: none;
+            font-size: 14px;
         }
 
         .message.error {
-            background: #fee;
-            color: #c00;
-            border: 1px solid #fcc;
+            background: #fff5f5;
+            color: #c92a2a;
+            border: 1px solid #ffc9c9;
         }
 
         .message.success {
-            background: #efe;
-            color: #0a0;
-            border: 1px solid #cfc;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .instructions {
+            margin-top: 24px;
+            padding: 16px;
+            background: #fafbfc;
+            border-radius: 8px;
+            border: 1px solid #e1e4e8;
+            font-size: 13px;
+        }
+
+        .instructions strong {
+            color: #1a1a1a;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #6c757d;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 6px;
         }
 
         .footer {
             text-align: center;
-            color: white;
-            padding: 20px;
-            font-size: 14px;
-            opacity: 0.8;
+            padding: 32px 24px;
+            color: #6c757d;
+            font-size: 13px;
+            border-top: 1px solid #e1e4e8;
+            background: white;
+            margin-top: 48px;
         }
 
         @media (max-width: 768px) {
@@ -315,78 +368,97 @@
             }
 
             .header h1 {
-                font-size: 32px;
+                font-size: 24px;
+            }
+
+            .modal-content {
+                padding: 24px;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏛️ Hub de Serviços</h1>
-        <p>Sistema de Gestão de Arquivo</p>
+        <div class="header-content">
+            <h1>Hub de Serviços</h1>
+            <p>Sistema de Gestão de Arquivo</p>
+        </div>
     </div>
 
     <div class="container">
+        <div class="section-title">Serviços Disponíveis</div>
+        
         <div class="services-grid">
             <!-- Serviço 1: Visualização de Boxes -->
             <div class="service-card" onclick="openService('boxes')">
-                <div class="service-icon">📦</div>
+                <div class="service-header">
+                    <div class="service-icon">📦</div>
+                    <span class="service-status status-active">Ativo</span>
+                </div>
                 <div class="service-title">Visualização de Boxes</div>
                 <div class="service-description">
-                    Gere mapas interativos de ocupação dos boxes do arquivo. 
-                    Visualize 7000 boxes organizados com cores por situação e estatísticas detalhadas.
+                    Gere mapas interativos de ocupação dos boxes do arquivo com visualização de 7000 boxes organizados por cores e estatísticas detalhadas.
                 </div>
-                <span class="service-status status-active">✓ Ativo</span>
             </div>
 
             <!-- Serviço 2: Placeholder -->
             <div class="service-card disabled">
-                <div class="service-icon">📊</div>
+                <div class="service-header">
+                    <div class="service-icon">📊</div>
+                    <span class="service-status status-coming">Em breve</span>
+                </div>
                 <div class="service-title">Relatórios Estatísticos</div>
                 <div class="service-description">
-                    Análise avançada de dados do arquivo com gráficos, tendências e insights automáticos.
+                    Análise avançada de dados do arquivo com gráficos, tendências e insights automáticos para tomada de decisão.
                 </div>
-                <span class="service-status status-coming">🔜 Em breve</span>
             </div>
 
             <!-- Serviço 3: Placeholder -->
             <div class="service-card disabled">
-                <div class="service-icon">🔍</div>
+                <div class="service-header">
+                    <div class="service-icon">🔍</div>
+                    <span class="service-status status-coming">Em breve</span>
+                </div>
                 <div class="service-title">Busca Avançada</div>
                 <div class="service-description">
-                    Sistema de busca inteligente para localizar documentos rapidamente no arquivo físico.
+                    Sistema de busca inteligente para localizar documentos rapidamente no arquivo físico com filtros avançados.
                 </div>
-                <span class="service-status status-coming">🔜 Em breve</span>
             </div>
 
             <!-- Serviço 4: Placeholder -->
             <div class="service-card disabled">
-                <div class="service-icon">📋</div>
+                <div class="service-header">
+                    <div class="service-icon">📋</div>
+                    <span class="service-status status-coming">Em breve</span>
+                </div>
                 <div class="service-title">Gestão de Empréstimos</div>
                 <div class="service-description">
-                    Controle de documentos emprestados, prazos e devoluções com alertas automáticos.
+                    Controle completo de documentos emprestados, prazos de devolução e alertas automáticos para pendências.
                 </div>
-                <span class="service-status status-coming">🔜 Em breve</span>
             </div>
 
             <!-- Serviço 5: Placeholder -->
             <div class="service-card disabled">
-                <div class="service-icon">📈</div>
+                <div class="service-header">
+                    <div class="service-icon">📈</div>
+                    <span class="service-status status-coming">Em breve</span>
+                </div>
                 <div class="service-title">Dashboard Gerencial</div>
                 <div class="service-description">
-                    Painel executivo com indicadores, métricas e KPIs do sistema de arquivo.
+                    Painel executivo com indicadores de performance, métricas operacionais e KPIs do sistema de arquivo.
                 </div>
-                <span class="service-status status-coming">🔜 Em breve</span>
             </div>
 
             <!-- Serviço 6: Placeholder -->
             <div class="service-card disabled">
-                <div class="service-icon">🏷️</div>
+                <div class="service-header">
+                    <div class="service-icon">🏷️</div>
+                    <span class="service-status status-coming">Em breve</span>
+                </div>
                 <div class="service-title">Gerador de Etiquetas</div>
                 <div class="service-description">
-                    Criação automatizada de etiquetas para boxes e documentos com QR codes.
+                    Criação automatizada de etiquetas para boxes e documentos com códigos de barras e QR codes integrados.
                 </div>
-                <span class="service-status status-coming">🔜 Em breve</span>
             </div>
         </div>
     </div>
@@ -395,11 +467,11 @@
     <div class="modal" id="modalBoxes">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('modalBoxes')">&times;</button>
-            <div class="modal-title">📦 Visualização de Boxes</div>
+            <div class="modal-title">Visualização de Boxes</div>
 
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
-                <div class="upload-text">Clique ou arraste o arquivo Excel aqui</div>
+                <div class="upload-text">Clique ou arraste o arquivo Excel</div>
                 <div class="upload-hint">Arquivos .xls ou .xlsx (máx. 16MB)</div>
                 <input type="file" id="fileInput" accept=".xls,.xlsx">
             </div>
@@ -414,12 +486,12 @@
             <div class="loader" id="loader"></div>
             <div class="message" id="message"></div>
 
-            <div style="margin-top: 30px; padding: 20px; background: #f9fafb; border-radius: 10px; font-size: 14px; color: #666;">
-                <strong>📋 Instruções:</strong>
-                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
-                    <li>Use o arquivo Excel direto do SGA</li>
-                    <li>Não é necessária nenhuma modificação</li>
-                    <li>O processamento é automático</li>
+            <div class="instructions">
+                <strong>Instruções</strong>
+                <ul>
+                    <li>Use o arquivo Excel exportado diretamente do SGA</li>
+                    <li>Não é necessária nenhuma modificação prévia</li>
+                    <li>O processamento dos dados é totalmente automático</li>
                 </ul>
             </div>
         </div>
@@ -438,7 +510,6 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
-            // Reset form
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInfo').style.display = 'none';
             document.getElementById('uploadBtn').style.display = 'none';
@@ -446,7 +517,6 @@
             selectedFile = null;
         }
 
-        // Fechar modal ao clicar fora
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
