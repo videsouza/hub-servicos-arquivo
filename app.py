@@ -29,64 +29,66 @@ def gerar_cores_distintas(n):
         cores.append(hex_color)
     return cores
 
-def processar_excel(filepath):
-    """Processa o arquivo Excel e retorna os dados estruturados"""
-    # Ler arquivo Excel - cabeçalhos na linha 3 (índice 2)
+def processar_excel_visualizacao(filepath):
+    """Processa o arquivo Excel para visualização de boxes (completo)"""
+    print("Processando para visualização...")
+    
+    # Ler arquivo Excel
     df = pd.read_excel(filepath, header=2)
     
-    # Renomear primeira coluna para 'Box' se necessário
+    # Renomear primeira coluna para 'Box'
     if df.columns[0] != 'Box':
         df = df.rename(columns={df.columns[0]: 'Box'})
     
-    # Converter coluna Box para numérico
+    # Converter e limpar
     df['Box'] = pd.to_numeric(df['Box'], errors='coerce')
-    
-    # Remover linhas onde Box não é número válido
     df = df.dropna(subset=['Box'])
     df['Box'] = df['Box'].astype(int)
-    
-    # Filtrar apenas boxes de 1 a 7000
     df = df[(df['Box'] >= 1) & (df['Box'] <= 7000)]
     
-    # Identificar colunas de situações (excluir 'Box' e 'Total')
+    # Identificar colunas de situações
     colunas_situacoes = [col for col in df.columns if col not in ['Box', 'Total', 'total', 'TOTAL']]
     
-    # Preencher NaN com 0 nas colunas de situações
+    # Preencher NaN
     for col in colunas_situacoes:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+    
+    print(f"Processando {len(df)} boxes...")
     
     # Criar estrutura de dados para visualização
     boxes_data = {}
     
-    for box_num in range(1, 7001):
-        box_row = df[df['Box'] == box_num]
+    # Processar apenas boxes que existem no arquivo
+    for _, row in df.iterrows():
+        box_num = int(row['Box'])
+        situacoes = {}
+        percentuais = {}
+        total_box = 0
         
-        if len(box_row) == 0:
+        for col in colunas_situacoes:
+            count = int(row[col])
+            if count > 0:
+                situacoes[col] = count
+                total_box += count
+        
+        if total_box > 0:
+            for sit, count in situacoes.items():
+                percentuais[sit] = (count / total_box) * 100
+        
+        boxes_data[box_num] = {
+            'total': total_box,
+            'situacoes': situacoes,
+            'percentuais': percentuais
+        }
+    
+    # Adicionar boxes vazios (1-7000) de forma eficiente
+    print("Adicionando boxes vazios...")
+    for box_num in range(1, 7001):
+        if box_num not in boxes_data:
             boxes_data[box_num] = {
                 'total': 0,
                 'situacoes': {},
                 'percentuais': {}
-            }
-        else:
-            box_row = box_row.iloc[0]
-            situacoes = {}
-            percentuais = {}
-            total_box = 0
-            
-            for col in colunas_situacoes:
-                count = int(box_row[col])
-                if count > 0:
-                    situacoes[col] = count
-                    total_box += count
-            
-            if total_box > 0:
-                for sit, count in situacoes.items():
-                    percentuais[sit] = (count / total_box) * 100
-            
-            boxes_data[box_num] = {
-                'total': total_box,
-                'situacoes': situacoes,
-                'percentuais': percentuais
             }
     
     # Calcular estatísticas
@@ -102,8 +104,60 @@ def processar_excel(filepath):
     cores_situacoes = gerar_cores_distintas(len(colunas_situacoes))
     mapa_cores = dict(zip(colunas_situacoes, cores_situacoes))
     
+    print("Processamento concluído!")
+    
     return {
         'boxes_data': boxes_data,
+        'colunas_situacoes': colunas_situacoes,
+        'mapa_cores': mapa_cores,
+        'totais_por_situacao': totais_por_situacao,
+        'total_geral': total_geral,
+        'boxes_ocupados': boxes_ocupados,
+        'total_boxes': len(df)
+    }
+
+def processar_excel_relatorios(filepath):
+    """Processa o arquivo Excel apenas para relatórios (sem boxes_data completo)"""
+    print("Processando para relatórios (versão leve)...")
+    
+    # Ler arquivo Excel
+    df = pd.read_excel(filepath, header=2)
+    
+    # Renomear primeira coluna para 'Box'
+    if df.columns[0] != 'Box':
+        df = df.rename(columns={df.columns[0]: 'Box'})
+    
+    # Converter e limpar
+    df['Box'] = pd.to_numeric(df['Box'], errors='coerce')
+    df = df.dropna(subset=['Box'])
+    df['Box'] = df['Box'].astype(int)
+    df = df[(df['Box'] >= 1) & (df['Box'] <= 7000)]
+    
+    # Identificar colunas de situações
+    colunas_situacoes = [col for col in df.columns if col not in ['Box', 'Total', 'total', 'TOTAL']]
+    
+    # Preencher NaN
+    for col in colunas_situacoes:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+    
+    # Calcular estatísticas (não precisa do boxes_data completo)
+    totais_por_situacao = {}
+    for col in colunas_situacoes:
+        total = df[col].sum()
+        totais_por_situacao[col] = int(total)
+    
+    total_geral = sum(totais_por_situacao.values())
+    boxes_ocupados = len(df[df[colunas_situacoes].sum(axis=1) > 0])
+    
+    # Gerar cores
+    cores_situacoes = gerar_cores_distintas(len(colunas_situacoes))
+    mapa_cores = dict(zip(colunas_situacoes, cores_situacoes))
+    
+    # Criar boxes_data vazio (relatórios não precisam disso)
+    print("Processamento de relatórios concluído!")
+    
+    return {
+        'boxes_data': {},  # Vazio para economizar memória
         'colunas_situacoes': colunas_situacoes,
         'mapa_cores': mapa_cores,
         'totais_por_situacao': totais_por_situacao,
@@ -140,8 +194,8 @@ def upload_file():
         print(f"Salvando em: {filepath}")
         file.save(filepath)
         
-        print("Processando arquivo...")
-        dados = processar_excel(filepath)
+        print("Processando arquivo para visualização...")
+        dados = processar_excel_visualizacao(filepath)
         print(f"Processamento concluído. Total de documentos: {dados['total_geral']}")
         
         # Remover arquivo temporário
@@ -187,7 +241,7 @@ def upload_relatorios():
         file.save(filepath)
         
         print("Processando arquivo para relatórios...")
-        dados = processar_excel(filepath)
+        dados = processar_excel_relatorios(filepath)
         print(f"Processamento concluído. Total de documentos: {dados['total_geral']}")
         
         # Remover arquivo temporário
@@ -211,18 +265,6 @@ def relatorios():
 @app.route('/health')
 def health():
     return jsonify({'status': 'ok', 'message': 'Servidor funcionando'}), 200
-
-# Lista todas as rotas registradas
-@app.route('/routes')
-def list_routes():
-    routes = []
-    for rule in app.url_map.iter_rules():
-        routes.append({
-            'endpoint': rule.endpoint,
-            'methods': list(rule.methods),
-            'path': str(rule)
-        })
-    return jsonify(routes)
 
 if __name__ == '__main__':
     print("=== INICIANDO SERVIDOR ===")
