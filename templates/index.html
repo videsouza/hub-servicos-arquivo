@@ -401,17 +401,17 @@
                 </div>
             </div>
 
-            <!-- Serviço 2: Placeholder -->
-            <div class="service-card disabled">
-                <div class="service-header">
-                    <div class="service-icon">📊</div>
-                    <span class="service-status status-coming">Em breve</span>
-                </div>
-                <div class="service-title">Relatórios Estatísticos</div>
-                <div class="service-description">
-                    Análise avançada de dados do arquivo com gráficos, tendências e insights automáticos para tomada de decisão.
-                </div>
-            </div>
+            !-- Serviço 2: Relatórios Estatísticos -->
+<div class="service-card" onclick="openService('relatorios')">
+    <div class="service-header">
+        <div class="service-icon">📊</div>
+        <span class="service-status status-active">Ativo</span>
+    </div>
+    <div class="service-title">Relatórios Estatísticos</div>
+    <div class="service-description">
+        Análise avançada de dados do arquivo com tabelas de frequência, gráficos, tendências e insights automáticos para tomada de decisão.
+    </div>
+</div>
 
             <!-- Serviço 3: Placeholder -->
             <div class="service-card disabled">
@@ -618,5 +618,39 @@
             message.style.display = 'block';
         }
     </script>
+
+    <!-- Modal para Relatórios Estatísticos -->
+<div class="modal" id="modalRelatorios">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalRelatorios')">&times;</button>
+        <div class="modal-title">Relatórios Estatísticos</div>
+
+        <div class="upload-area" id="uploadAreaRelatorios">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Clique ou arraste o arquivo Excel</div>
+            <div class="upload-hint">Arquivos .xls ou .xlsx (máx. 16MB)</div>
+            <input type="file" id="fileInputRelatorios" accept=".xls,.xlsx">
+        </div>
+
+        <div class="file-info" id="fileInfoRelatorios">
+            <div class="file-name" id="fileNameRelatorios"></div>
+            <div class="file-size" id="fileSizeRelatorios"></div>
+        </div>
+
+        <button class="btn" id="uploadBtnRelatorios">Gerar Relatórios</button>
+        
+        <div class="loader" id="loaderRelatorios"></div>
+        <div class="message" id="messageRelatorios"></div>
+
+        <div class="instructions">
+            <strong>Instruções</strong>
+            <ul>
+                <li>Use o mesmo arquivo Excel do SGA</li>
+                <li>Serão gerados gráficos e análises estatísticas</li>
+                <li>Inclui tabelas de frequência e tendências</li>
+            </ul>
+        </div>
+    </div>
+</div>
 </body>
 </html>
