@@ -534,6 +534,156 @@
 
         detailedHTML += '</tbody></table>';
         tabelaDetalhada.innerHTML = detailedHTML;
+
+        // ==== TABELA DE FREQUÊNCIA: COD ====
+        if (data.freq_cod) {
+            document.getElementById('sectionFreqCod').style.display = 'block';
+            const tabelaFreqCod = document.getElementById('tabelaFreqCod');
+            
+            let codHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código (COD)</th>
+                            <th>Freq. Absoluta</th>
+                            <th>Freq. Relativa (%)</th>
+                            <th>Freq. Rel. Acumulada (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.freq_cod.forEach(item => {
+                codHTML += `
+                    <tr>
+                        <td><strong>${item.Variável}</strong></td>
+                        <td>${item.Freq_Absoluta.toLocaleString('pt-BR')}</td>
+                        <td>${item.Freq_Relativa}%</td>
+                        <td>${item.Freq_Rel_Acumulada}%</td>
+                    </tr>
+                `;
+            });
+            
+            codHTML += '</tbody></table>';
+            tabelaFreqCod.innerHTML = codHTML;
+        }
+
+        // ==== ANÁLISE DE TIPO PARA COD MAIS FREQUENTE ====
+        if (data.freq_tipo_por_cod_top) {
+            document.getElementById('sectionTipoCod').style.display = 'block';
+            
+            const insightCodTop = document.getElementById('insightCodTop');
+            insightCodTop.innerHTML = `
+                <div class="insight-title">Análise do COD "${data.freq_tipo_por_cod_top.cod}"</div>
+                <div class="insight-text">
+                    Este é o código mais frequente no arquivo, com ${data.freq_tipo_por_cod_top.total_docs.toLocaleString('pt-BR')} documentos. 
+                    A tabela abaixo mostra a distribuição dos tipos documentais dentro deste código.
+                </div>
+            `;
+            
+            const tabelaTipoCod = document.getElementById('tabelaTipoCod');
+            let tipoCodHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo Documental</th>
+                            <th>Freq. Absoluta</th>
+                            <th>Freq. Relativa (%)</th>
+                            <th>Freq. Rel. Acumulada (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.freq_tipo_por_cod_top.dados.forEach(item => {
+                tipoCodHTML += `
+                    <tr>
+                        <td><strong>${item.Variável}</strong></td>
+                        <td>${item.Freq_Absoluta.toLocaleString('pt-BR')}</td>
+                        <td>${item.Freq_Relativa}%</td>
+                        <td>${item.Freq_Rel_Acumulada}%</td>
+                    </tr>
+                `;
+            });
+            
+            tipoCodHTML += '</tbody></table>';
+            tabelaTipoCod.innerHTML = tipoCodHTML;
+        }
+
+        // ==== TABELA DE FREQUÊNCIA: SETOR ====
+        if (data.freq_setor) {
+            document.getElementById('sectionFreqSetor').style.display = 'block';
+            const tabelaFreqSetor = document.getElementById('tabelaFreqSetor');
+            
+            let setorHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setor</th>
+                            <th>Freq. Absoluta</th>
+                            <th>Freq. Relativa (%)</th>
+                            <th>Freq. Rel. Acumulada (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.freq_setor.forEach(item => {
+                setorHTML += `
+                    <tr>
+                        <td><strong>${item.Variável}</strong></td>
+                        <td>${item.Freq_Absoluta.toLocaleString('pt-BR')}</td>
+                        <td>${item.Freq_Relativa}%</td>
+                        <td>${item.Freq_Rel_Acumulada}%</td>
+                    </tr>
+                `;
+            });
+            
+            setorHTML += '</tbody></table>';
+            tabelaFreqSetor.innerHTML = setorHTML;
+        }
+
+        // ==== ANÁLISE DE TIPO PARA SETOR MAIS FREQUENTE ====
+        if (data.freq_tipo_por_setor_top) {
+            document.getElementById('sectionTipoSetor').style.display = 'block';
+            
+            const insightSetorTop = document.getElementById('insightSetorTop');
+            insightSetorTop.innerHTML = `
+                <div class="insight-title">Análise do SETOR "${data.freq_tipo_por_setor_top.setor}"</div>
+                <div class="insight-text">
+                    Este é o setor mais frequente no arquivo, com ${data.freq_tipo_por_setor_top.total_docs.toLocaleString('pt-BR')} documentos. 
+                    A tabela abaixo mostra a distribuição dos tipos documentais produzidos por este setor.
+                </div>
+            `;
+            
+            const tabelaTipoSetor = document.getElementById('tabelaTipoSetor');
+            let tipoSetorHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo Documental</th>
+                            <th>Freq. Absoluta</th>
+                            <th>Freq. Relativa (%)</th>
+                            <th>Freq. Rel. Acumulada (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.freq_tipo_por_setor_top.dados.forEach(item => {
+                tipoSetorHTML += `
+                    <tr>
+                        <td><strong>${item.Variável}</strong></td>
+                        <td>${item.Freq_Absoluta.toLocaleString('pt-BR')}</td>
+                        <td>${item.Freq_Relativa}%</td>
+                        <td>${item.Freq_Rel_Acumulada}%</td>
+                    </tr>
+                `;
+            });
+            
+            tipoSetorHTML += '</tbody></table>';
+            tabelaTipoSetor.innerHTML = tipoSetorHTML;
+        }
     </script>
 </body>
 </html>
