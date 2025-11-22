@@ -323,13 +323,15 @@
             throw e;
         }
 
-        // Verificar se os dados estão completos
-        if (!data.total_geral || !data.boxes_ocupados || !data.colunas_situacoes) {
+        // Verificar se os dados essenciais estão completos
+        if (data.total_geral === undefined || data.boxes_ocupados === undefined || !data.colunas_situacoes) {
             console.error('Dados incompletos:', data);
             alert('Dados incompletos ou corrompidos. Faça upload novamente.');
             window.location.href = '/';
             throw new Error('Dados incompletos');
         }
+        
+        console.log('Validação OK! Dados completos.');
 
         // Ocultar loading
         document.getElementById('loading').style.display = 'none';
@@ -492,7 +494,7 @@
                         <th>Situação</th>
                         <th>Total Docs</th>
                         <th>% do Total</th>
-                        <th>Boxes com Esta Situação</th>
+                        <th>Boxes Estimados</th>
                         <th>Média por Box</th>
                     </tr>
                 </thead>
@@ -502,20 +504,17 @@
         situacoesOrdenadas.forEach(([sit, count]) => {
             const percent = ((count / data.total_geral) * 100).toFixed(2);
             
-            // Contar quantos boxes têm esta situação
-            let boxesComSituacao = 0;
-            Object.values(data.boxes_data).forEach(box => {
-                if (box.situacoes[sit]) boxesComSituacao++;
-            });
-            
-            const mediaPorBox = boxesComSituacao > 0 ? (count / boxesComSituacao).toFixed(1) : 0;
+            // Estimar boxes com esta situação baseado na proporção
+            // Como não temos boxes_data completo, fazemos uma estimativa
+            const boxesEstimados = Math.round((count / data.total_geral) * data.boxes_ocupados);
+            const mediaPorBox = boxesEstimados > 0 ? (count / boxesEstimados).toFixed(1) : 0;
             
             detailedHTML += `
                 <tr>
                     <td><strong>${sit}</strong></td>
                     <td>${count.toLocaleString('pt-BR')}</td>
                     <td>${percent}%</td>
-                    <td>${boxesComSituacao.toLocaleString('pt-BR')}</td>
+                    <td>~${boxesEstimados.toLocaleString('pt-BR')}</td>
                     <td>${mediaPorBox}</td>
                 </tr>
             `;
