@@ -381,7 +381,7 @@
     <div class="header">
         <div class="header-content">
             <h1>Hub de Serviços</h1>
-            <p>Arquivo - Secretaria de Educação</p>
+            <p>Sistema de Gestão de Arquivo</p>
         </div>
     </div>
 
@@ -401,17 +401,17 @@
                 </div>
             </div>
 
-            !-- Serviço 2: Relatórios Estatísticos -->
-<div class="service-card" onclick="openService('relatorios')">
-    <div class="service-header">
-        <div class="service-icon">📊</div>
-        <span class="service-status status-active">Ativo</span>
-    </div>
-    <div class="service-title">Relatórios Estatísticos</div>
-    <div class="service-description">
-        Análise avançada de dados do arquivo com tabelas de frequência, gráficos, tendências e insights automáticos para tomada de decisão.
-    </div>
-</div>
+            <!-- Serviço 2: Relatórios Estatísticos -->
+            <div class="service-card" onclick="openService('relatorios')">
+                <div class="service-header">
+                    <div class="service-icon">📊</div>
+                    <span class="service-status status-active">Ativo</span>
+                </div>
+                <div class="service-title">Relatórios Estatísticos</div>
+                <div class="service-description">
+                    Análise avançada de dados do arquivo com tabelas de frequência, gráficos, tendências e insights automáticos para tomada de decisão.
+                </div>
+            </div>
 
             <!-- Serviço 3: Placeholder -->
             <div class="service-card disabled">
@@ -497,6 +497,40 @@
         </div>
     </div>
 
+    <!-- Modal para Relatórios Estatísticos -->
+    <div class="modal" id="modalRelatorios">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modalRelatorios')">&times;</button>
+            <div class="modal-title">Relatórios Estatísticos</div>
+
+            <div class="upload-area" id="uploadAreaRelatorios">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Clique ou arraste o arquivo Excel</div>
+                <div class="upload-hint">Arquivos .xls ou .xlsx (máx. 16MB)</div>
+                <input type="file" id="fileInputRelatorios" accept=".xls,.xlsx">
+            </div>
+
+            <div class="file-info" id="fileInfoRelatorios">
+                <div class="file-name" id="fileNameRelatorios"></div>
+                <div class="file-size" id="fileSizeRelatorios"></div>
+            </div>
+
+            <button class="btn" id="uploadBtnRelatorios">Gerar Relatórios</button>
+            
+            <div class="loader" id="loaderRelatorios"></div>
+            <div class="message" id="messageRelatorios"></div>
+
+            <div class="instructions">
+                <strong>Instruções</strong>
+                <ul>
+                    <li>Use o mesmo arquivo Excel do SGA</li>
+                    <li>Serão gerados gráficos e análises estatísticas</li>
+                    <li>Inclui tabelas de frequência e tendências</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <div class="footer">
         Desenvolvido por Vinicius Augusto de Souza com Claude.ai
     </div>
@@ -505,24 +539,31 @@
         function openService(service) {
             if (service === 'boxes') {
                 document.getElementById('modalBoxes').classList.add('show');
+            } else if (service === 'relatorios') {
+                document.getElementById('modalRelatorios').classList.add('show');
             }
         }
 
-        function openService(service) {
-    if (service === 'boxes') {
-        document.getElementById('modalBoxes').classList.add('show');
-    } else if (service === 'relatorios') {
-        document.getElementById('modalRelatorios').classList.add('show');
-    }
-}
-
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
-            document.getElementById('fileInput').value = '';
-            document.getElementById('fileInfo').style.display = 'none';
-            document.getElementById('uploadBtn').style.display = 'none';
-            document.getElementById('message').style.display = 'none';
-            selectedFile = null;
+            
+            // Reset para modal boxes
+            if (modalId === 'modalBoxes') {
+                document.getElementById('fileInput').value = '';
+                document.getElementById('fileInfo').style.display = 'none';
+                document.getElementById('uploadBtn').style.display = 'none';
+                document.getElementById('message').style.display = 'none';
+                selectedFile = null;
+            }
+            
+            // Reset para modal relatórios
+            if (modalId === 'modalRelatorios') {
+                document.getElementById('fileInputRelatorios').value = '';
+                document.getElementById('fileInfoRelatorios').style.display = 'none';
+                document.getElementById('uploadBtnRelatorios').style.display = 'none';
+                document.getElementById('messageRelatorios').style.display = 'none';
+                selectedFileRelatorios = null;
+            }
         }
 
         document.querySelectorAll('.modal').forEach(modal => {
@@ -533,6 +574,7 @@
             });
         });
 
+        // ==== VISUALIZAÇÃO DE BOXES ====
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
@@ -627,132 +669,98 @@
         }
 
         // ==== RELATÓRIOS ESTATÍSTICOS ====
-const uploadAreaRelatorios = document.getElementById('uploadAreaRelatorios');
-const fileInputRelatorios = document.getElementById('fileInputRelatorios');
-const uploadBtnRelatorios = document.getElementById('uploadBtnRelatorios');
-const loaderRelatorios = document.getElementById('loaderRelatorios');
-const messageRelatorios = document.getElementById('messageRelatorios');
-const fileInfoRelatorios = document.getElementById('fileInfoRelatorios');
-const fileNameRelatorios = document.getElementById('fileNameRelatorios');
-const fileSizeRelatorios = document.getElementById('fileSizeRelatorios');
+        const uploadAreaRelatorios = document.getElementById('uploadAreaRelatorios');
+        const fileInputRelatorios = document.getElementById('fileInputRelatorios');
+        const uploadBtnRelatorios = document.getElementById('uploadBtnRelatorios');
+        const loaderRelatorios = document.getElementById('loaderRelatorios');
+        const messageRelatorios = document.getElementById('messageRelatorios');
+        const fileInfoRelatorios = document.getElementById('fileInfoRelatorios');
+        const fileNameRelatorios = document.getElementById('fileNameRelatorios');
+        const fileSizeRelatorios = document.getElementById('fileSizeRelatorios');
 
-let selectedFileRelatorios = null;
+        let selectedFileRelatorios = null;
 
-uploadAreaRelatorios.addEventListener('click', () => fileInputRelatorios.click());
+        uploadAreaRelatorios.addEventListener('click', () => fileInputRelatorios.click());
 
-fileInputRelatorios.addEventListener('change', (e) => {
-    handleFileRelatorios(e.target.files[0]);
-});
-
-uploadAreaRelatorios.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadAreaRelatorios.classList.add('dragover');
-});
-
-uploadAreaRelatorios.addEventListener('dragleave', () => {
-    uploadAreaRelatorios.classList.remove('dragover');
-});
-
-uploadAreaRelatorios.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadAreaRelatorios.classList.remove('dragover');
-    handleFileRelatorios(e.dataTransfer.files[0]);
-});
-
-function handleFileRelatorios(file) {
-    if (!file) return;
-
-    const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/i)) {
-        showMessageRelatorios('Apenas arquivos Excel (.xls ou .xlsx) são permitidos', 'error');
-        return;
-    }
-
-    if (file.size > 16 * 1024 * 1024) {
-        showMessageRelatorios('Arquivo muito grande. Máximo: 16MB', 'error');
-        return;
-    }
-
-    selectedFileRelatorios = file;
-    fileNameRelatorios.textContent = `📄 ${file.name}`;
-    fileSizeRelatorios.textContent = `Tamanho: ${(file.size / 1024).toFixed(2)} KB`;
-    fileInfoRelatorios.style.display = 'block';
-    uploadBtnRelatorios.style.display = 'block';
-    messageRelatorios.style.display = 'none';
-}
-
-uploadBtnRelatorios.addEventListener('click', async () => {
-    if (!selectedFileRelatorios) return;
-
-    const formData = new FormData();
-    formData.append('file', selectedFileRelatorios);
-
-    uploadBtnRelatorios.disabled = true;
-    loaderRelatorios.style.display = 'block';
-    messageRelatorios.style.display = 'none';
-
-    try {
-        const response = await fetch('/upload-relatorios', {
-            method: 'POST',
-            body: formData
+        fileInputRelatorios.addEventListener('change', (e) => {
+            handleFileRelatorios(e.target.files[0]);
         });
 
-        const data = await response.json();
+        uploadAreaRelatorios.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadAreaRelatorios.classList.add('dragover');
+        });
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Erro ao processar arquivo');
+        uploadAreaRelatorios.addEventListener('dragleave', () => {
+            uploadAreaRelatorios.classList.remove('dragover');
+        });
+
+        uploadAreaRelatorios.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadAreaRelatorios.classList.remove('dragover');
+            handleFileRelatorios(e.dataTransfer.files[0]);
+        });
+
+        function handleFileRelatorios(file) {
+            if (!file) return;
+
+            const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/i)) {
+                showMessageRelatorios('Apenas arquivos Excel (.xls ou .xlsx) são permitidos', 'error');
+                return;
+            }
+
+            if (file.size > 16 * 1024 * 1024) {
+                showMessageRelatorios('Arquivo muito grande. Máximo: 16MB', 'error');
+                return;
+            }
+
+            selectedFileRelatorios = file;
+            fileNameRelatorios.textContent = `📄 ${file.name}`;
+            fileSizeRelatorios.textContent = `Tamanho: ${(file.size / 1024).toFixed(2)} KB`;
+            fileInfoRelatorios.style.display = 'block';
+            uploadBtnRelatorios.style.display = 'block';
+            messageRelatorios.style.display = 'none';
         }
 
-        sessionStorage.setItem('relatoriosData', JSON.stringify(data));
-        window.location.href = '/relatorios';
+        uploadBtnRelatorios.addEventListener('click', async () => {
+            if (!selectedFileRelatorios) return;
 
-    } catch (error) {
-        showMessageRelatorios(error.message, 'error');
-    } finally {
-        uploadBtnRelatorios.disabled = false;
-        loaderRelatorios.style.display = 'none';
-    }
-});
+            const formData = new FormData();
+            formData.append('file', selectedFileRelatorios);
 
-function showMessageRelatorios(text, type) {
-    messageRelatorios.textContent = text;
-    messageRelatorios.className = `message ${type}`;
-    messageRelatorios.style.display = 'block';
-}
+            uploadBtnRelatorios.disabled = true;
+            loaderRelatorios.style.display = 'block';
+            messageRelatorios.style.display = 'none';
+
+            try {
+                const response = await fetch('/upload-relatorios', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao processar arquivo');
+                }
+
+                sessionStorage.setItem('relatoriosData', JSON.stringify(data));
+                window.location.href = '/relatorios';
+
+            } catch (error) {
+                showMessageRelatorios(error.message, 'error');
+            } finally {
+                uploadBtnRelatorios.disabled = false;
+                loaderRelatorios.style.display = 'none';
+            }
+        });
+
+        function showMessageRelatorios(text, type) {
+            messageRelatorios.textContent = text;
+            messageRelatorios.className = `message ${type}`;
+            messageRelatorios.style.display = 'block';
+        }
     </script>
-
-    <!-- Modal para Relatórios Estatísticos -->
-<div class="modal" id="modalRelatorios">
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeModal('modalRelatorios')">&times;</button>
-        <div class="modal-title">Relatórios Estatísticos</div>
-
-        <div class="upload-area" id="uploadAreaRelatorios">
-            <div class="upload-icon">📁</div>
-            <div class="upload-text">Clique ou arraste o arquivo Excel</div>
-            <div class="upload-hint">Arquivos .xls ou .xlsx (máx. 16MB)</div>
-            <input type="file" id="fileInputRelatorios" accept=".xls,.xlsx">
-        </div>
-
-        <div class="file-info" id="fileInfoRelatorios">
-            <div class="file-name" id="fileNameRelatorios"></div>
-            <div class="file-size" id="fileSizeRelatorios"></div>
-        </div>
-
-        <button class="btn" id="uploadBtnRelatorios">Gerar Relatórios</button>
-        
-        <div class="loader" id="loaderRelatorios"></div>
-        <div class="message" id="messageRelatorios"></div>
-
-        <div class="instructions">
-            <strong>Instruções</strong>
-            <ul>
-                <li>Use o mesmo arquivo Excel do SGA</li>
-                <li>Serão gerados gráficos e análises estatísticas</li>
-                <li>Inclui tabelas de frequência e tendências</li>
-            </ul>
-        </div>
-    </div>
-</div>
 </body>
 </html>
