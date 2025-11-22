@@ -5,495 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios Estatísticos - Sistema de Arquivo</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: #f8f9fa;
-            color: #2c3e50;
-        }
-
-        .header {
-            background: white;
-            border-bottom: 1px solid #e1e4e8;
-            padding: 24px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .back-btn {
-            background: white;
-            color: #0366d6;
-            border: 1px solid #e1e4e8;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .back-btn:hover {
-            background: #f6f8fa;
-            border-color: #0366d6;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 32px 24px;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .summary-card {
-            background: white;
-            border: 1px solid #e1e4e8;
-            border-radius: 12px;
-            padding: 24px;
-            transition: all 0.2s;
-        }
-
-        .summary-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .summary-label {
-            font-size: 13px;
-            color: #6c757d;
-            margin-bottom: 8px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .summary-value {
-            font-size: 32px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .summary-subtitle {
-            font-size: 13px;
-            color: #6c757d;
-            margin-top: 4px;
-        }
-
-        .section {
-            background: white;
-            border: 1px solid #e1e4e8;
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .chart-container {
-            width: 100%;
-            height: 400px;
-            margin-bottom: 20px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        thead {
-            background: #f8f9fa;
-        }
-
-        th {
-            text-align: left;
-            padding: 12px 16px;
-            font-weight: 600;
-            color: #1a1a1a;
-            border-bottom: 2px solid #e1e4e8;
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e1e4e8;
-            color: #2c3e50;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .insight-box {
-            background: #e7f5ff;
-            border-left: 4px solid #0366d6;
-            padding: 16px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-
-        .insight-title {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .insight-text {
-            color: #2c3e50;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 400px;
-        }
-
-        .spinner {
-            border: 4px solid #f1f3f5;
-            border-top: 4px solid #0366d6;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        @media print {
-            .header, .back-btn {
-                display: none;
-            }
-            .section {
-                page-break-inside: avoid;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
-            .chart-container {
-                height: 300px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <h1>📊 Relatórios Estatísticos</h1>
-            <a href="/" class="back-btn">← Voltar ao Hub</a>
-        </div>
-    </div>
 
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Gerando relatórios e análises...</p>
-    </div>
+<div id="loading">Carregando relatórios...</div>
+<div id="content" style="display:none;">
 
-    <div class="container" id="content" style="display: none;">
-        <!-- Resumo Executivo -->
-        <div class="summary-grid" id="summaryGrid"></div>
+    <h2>Resumo Executivo</h2>
+    <div id="summaryGrid"></div>
 
-        <!-- Insights Automáticos -->
-        <div class="section">
-            <div class="section-title">💡 Insights Principais</div>
-            <div id="insightsContainer"></div>
-        </div>
+    <h2>Insights</h2>
+    <div id="insightsContainer"></div>
 
-        <!-- Gráfico de Distribuição -->
-        <div class="section">
-            <div class="section-title">📈 Distribuição por Situação</div>
-            <div id="chartDistribuicao" class="chart-container"></div>
-        </div>
+    <h2>Distribuição por Situação</h2>
+    <div id="chartDistribuicao"></div>
 
-        <!-- Gráfico de Tendências -->
-        <div class="section">
-            <div class="section-title">📊 Ocupação de Boxes</div>
-            <div id="chartOcupacao" class="chart-container"></div>
-        </div>
+    <h2>Ocupação por Situação</h2>
+    <div id="chartOcupacao"></div>
 
-        <!-- Tabela de Frequências -->
-        <div class="section">
-            <div class="section-title">📋 Tabela de Frequências</div>
-            <div class="table-container" id="tabelaFrequencias"></div>
-        </div>
+    <h2>Tabela de Frequências</h2>
+    <div id="tabelaFrequencias"></div>
 
-        <!-- Análise Detalhada -->
-        <div class="section">
-            <div class="section-title">🔍 Análise Detalhada por Situação</div>
-            <div class="table-container" id="tabelaDetalhada"></div>
-        </div>
-    </div>
+    <h2>Análise Detalhada</h2>
+    <div id="tabelaDetalhada"></div>
 
-    <script>
-        const dataStr = sessionStorage.getItem('relatoriosData');
-        if (!dataStr) {
-            alert('Nenhum dado encontrado. Redirecionando...');
-            window.location.href = '/';
-        }
+</div>
 
-        const data = JSON.parse(dataStr);
+<script>
+// ==================== PROTEÇÃO ANTI-ERRO (BLINDADO) ====================
+const dataStr = sessionStorage.getItem('relatoriosData');
 
-        // Ocultar loading
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
+if (!dataStr) {
+    alert("Nenhum dado encontrado. Faça o upload novamente.");
+    window.location.href = "/";
+}
 
-        // ==== RESUMO EXECUTIVO ====
-        const summaryGrid = document.getElementById('summaryGrid');
-        
-        const summaryCards = [
-            { label: 'Total de Documentos', value: data.total_geral.toLocaleString('pt-BR'), subtitle: 'em todo o arquivo' },
-            { label: 'Boxes Ocupados', value: data.boxes_ocupados.toLocaleString('pt-BR'), subtitle: `de ${data.total_boxes} registrados` },
-            { label: 'Boxes Vazios', value: (7000 - data.boxes_ocupados).toLocaleString('pt-BR'), subtitle: 'disponíveis' },
-            { label: 'Taxa de Ocupação', value: ((data.boxes_ocupados / 7000) * 100).toFixed(1) + '%', subtitle: 'do arquivo' },
-            { label: 'Situações Diferentes', value: data.colunas_situacoes.length, subtitle: 'tipos de status' },
-            { label: 'Média por Box', value: (data.total_geral / data.boxes_ocupados).toFixed(0), subtitle: 'documentos/box' }
-        ];
+let data;
 
-        summaryCards.forEach(card => {
-            const div = document.createElement('div');
-            div.className = 'summary-card';
-            div.innerHTML = `
-                <div class="summary-label">${card.label}</div>
-                <div class="summary-value">${card.value}</div>
-                <div class="summary-subtitle">${card.subtitle}</div>
-            `;
-            summaryGrid.appendChild(div);
-        });
+try {
+    data = JSON.parse(dataStr);
+} catch (e) {
+    console.error("Erro ao converter JSON:", e);
+    alert("Dados inválidos. Refaça o envio do arquivo.");
+    window.location.href = "/";
+}
 
-        // ==== INSIGHTS AUTOMÁTICOS ====
-        const insightsContainer = document.getElementById('insightsContainer');
-        
-        // Encontrar situação predominante
-        const situacaoPredominante = Object.entries(data.totais_por_situacao)
-            .sort((a, b) => b[1] - a[1])[0];
-        
-        const percentPredominante = ((situacaoPredominante[1] / data.total_geral) * 100).toFixed(1);
-        
-        // Calcular capacidade restante
-        const capacidadeRestante = 7000 - data.boxes_ocupados;
-        const percentCapacidade = ((capacidadeRestante / 7000) * 100).toFixed(1);
+if (!data || typeof data.total_geral === 'undefined') {
+    console.error("Estrutura inválida:", data);
+    alert("Os dados recebidos estão incompletos.");
+    window.location.href = "/";
+}
 
-        const insights = [
-            {
-                title: '📌 Situação Predominante',
-                text: `A situação "${situacaoPredominante[0]}" representa ${percentPredominante}% do total de documentos (${situacaoPredominante[1].toLocaleString('pt-BR')} documentos), sendo a categoria mais significativa do arquivo.`
-            },
-            {
-                title: '📦 Capacidade do Arquivo',
-                text: `O arquivo possui ${capacidadeRestante.toLocaleString('pt-BR')} boxes vazios (${percentCapacidade}% da capacidade total), indicando ${percentCapacidade > 30 ? 'boa disponibilidade' : 'capacidade limitada'} para expansão.`
-            },
-            {
-                title: '📊 Densidade Média',
-                text: `Cada box ocupado contém em média ${(data.total_geral / data.boxes_ocupados).toFixed(0)} documentos, ${(data.total_geral / data.boxes_ocupados) > 30 ? 'sugerindo boa utilização do espaço' : 'indicando potencial para otimização'}.`
-            }
-        ];
+// ==================== VARIÁVEIS SEGURAS ====================
+const totalGeral = data.total_geral ?? 0;
+const boxesOcupados = data.boxes_ocupados ?? 0;
+const totalBoxes = data.total_boxes ?? 0;
+const colunasSituacoes = data.colunas_situacoes ?? [];
+const totaisSituacao = data.totais_por_situacao ?? {};
+const mapaCores = data.mapa_cores ?? {};
+const boxesData = data.boxes_data ?? {};
 
-        insights.forEach(insight => {
-            const div = document.createElement('div');
-            div.className = 'insight-box';
-            div.innerHTML = `
-                <div class="insight-title">${insight.title}</div>
-                <div class="insight-text">${insight.text}</div>
-            `;
-            insightsContainer.appendChild(div);
-        });
+// Exibir conteúdo
+document.getElementById('loading').style.display = 'none';
+document.getElementById('content').style.display = 'block';
 
-        // ==== GRÁFICO DE DISTRIBUIÇÃO (Pizza) ====
-        const distribuicaoData = [{
-            values: Object.values(data.totais_por_situacao),
-            labels: data.colunas_situacoes,
-            type: 'pie',
-            hole: 0.4,
-            marker: {
-                colors: Object.values(data.mapa_cores)
-            },
-            textinfo: 'label+percent',
-            textposition: 'outside',
-            automargin: true
-        }];
+// ==================== RESUMO ====================
+const summaryGrid = document.getElementById('summaryGrid');
 
-        const distribuicaoLayout = {
-            showlegend: true,
-            legend: { orientation: 'v', x: 1.1, y: 0.5 },
-            margin: { t: 20, b: 20, l: 20, r: 20 },
-            font: { family: 'system-ui, -apple-system, sans-serif', size: 12 }
-        };
+summaryGrid.innerHTML = `
+    <p><strong>Total de Documentos:</strong> ${totalGeral.toLocaleString('pt-BR')}</p>
+    <p><strong>Boxes Ocupados:</strong> ${boxesOcupados.toLocaleString('pt-BR')}</p>
+    <p><strong>Taxa de Ocupação:</strong> ${boxesOcupados ? ((boxesOcupados / 7000) * 100).toFixed(1) : 0}%</p>
+`;
 
-        Plotly.newPlot('chartDistribuicao', distribuicaoData, distribuicaoLayout, {responsive: true});
+// ==================== INSIGHTS ====================
+const insightsContainer = document.getElementById('insightsContainer');
 
-        // ==== GRÁFICO DE OCUPAÇÃO (Barras) ====
-        const situacoesOrdenadas = Object.entries(data.totais_por_situacao)
-            .sort((a, b) => b[1] - a[1]);
+if (Object.keys(totaisSituacao).length > 0) {
+    const situacaoPredominante = Object.entries(totaisSituacao).sort((a,b)=>b[1]-a[1])[0];
+    const perc = ((situacaoPredominante[1] / totalGeral) * 100).toFixed(1);
 
-        const ocupacaoData = [{
-            x: situacoesOrdenadas.map(s => s[0]),
-            y: situacoesOrdenadas.map(s => s[1]),
-            type: 'bar',
-            marker: {
-                color: situacoesOrdenadas.map(s => data.mapa_cores[s[0]]),
-                line: { color: '#e1e4e8', width: 1 }
-            },
-            text: situacoesOrdenadas.map(s => s[1].toLocaleString('pt-BR')),
-            textposition: 'outside',
-            hovertemplate: '<b>%{x}</b><br>%{y:,.0f} documentos<extra></extra>'
-        }];
+    insightsContainer.innerHTML = `
+        <p><strong>Situação predominante:</strong> ${situacaoPredominante[0]} (${perc}%)</p>
+    `;
+}
 
-        const ocupacaoLayout = {
-            xaxis: { title: '', tickangle: -45 },
-            yaxis: { title: 'Quantidade de Documentos', separatethousands: true },
-            margin: { t: 20, b: 100, l: 80, r: 20 },
-            font: { family: 'system-ui, -apple-system, sans-serif', size: 12 },
-            showlegend: false
-        };
+// ==================== GRÁFICO PIZZA ====================
+if (Object.keys(totaisSituacao).length > 0) {
+    Plotly.newPlot('chartDistribuicao', [{
+        values: Object.values(totaisSituacao),
+        labels: colunasSituacoes,
+        type: 'pie',
+        marker: { colors: Object.values(mapaCores) }
+    }]);
+}
 
-        Plotly.newPlot('chartOcupacao', ocupacaoData, ocupacaoLayout, {responsive: true});
+// ==================== GRÁFICO BARRAS ====================
+const situacoesOrdenadas = Object.entries(totaisSituacao).sort((a,b)=>b[1]-a[1]);
 
-        // ==== TABELA DE FREQUÊNCIAS ====
-        const tabelaFrequencias = document.getElementById('tabelaFrequencias');
-        
-        let tableHTML = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Situação</th>
-                        <th>Quantidade</th>
-                        <th>Percentual</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+Plotly.newPlot('chartOcupacao', [{
+    x: situacoesOrdenadas.map(s => s[0]),
+    y: situacoesOrdenadas.map(s => s[1]),
+    type: 'bar'
+}]);
 
-        situacoesOrdenadas.forEach(([sit, count]) => {
-            const percent = ((count / data.total_geral) * 100).toFixed(2);
-            const badge = percent > 30 ? 'badge-success' : percent > 10 ? 'badge-info' : 'badge-warning';
-            const status = percent > 30 ? 'Principal' : percent > 10 ? 'Relevante' : 'Menor';
-            
-            tableHTML += `
-                <tr>
-                    <td><strong>${sit}</strong></td>
-                    <td>${count.toLocaleString('pt-BR')}</td>
-                    <td>${percent}%</td>
-                    <td><span class="badge ${badge}">${status}</span></td>
-                </tr>
-            `;
-        });
+// ==================== TABELA FREQUÊNCIAS ====================
+let tabelaFreq = '<table border="1"><tr><th>Situação</th><th>Total</th><th>%</th></tr>';
 
-        tableHTML += '</tbody></table>';
-        tabelaFrequencias.innerHTML = tableHTML;
+situacoesOrdenadas.forEach(([sit, total]) => {
+    const percent = totalGeral ? ((total / totalGeral) * 100).toFixed(2) : 0;
+    tabelaFreq += `<tr><td>${sit}</td><td>${total}</td><td>${percent}%</td></tr>`;
+});
 
-        // ==== TABELA DETALHADA ====
-        const tabelaDetalhada = document.getElementById('tabelaDetalhada');
-        
-        let detailedHTML = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Situação</th>
-                        <th>Total Docs</th>
-                        <th>% do Total</th>
-                        <th>Boxes com Esta Situação</th>
-                        <th>Média por Box</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+tabelaFreq += '</table>';
+document.getElementById('tabelaFrequencias').innerHTML = tabelaFreq;
 
-        situacoesOrdenadas.forEach(([sit, count]) => {
-            const percent = ((count / data.total_geral) * 100).toFixed(2);
-            
-            // Contar quantos boxes têm esta situação
-            let boxesComSituacao = 0;
-            Object.values(data.boxes_data).forEach(box => {
-                if (box.situacoes[sit]) boxesComSituacao++;
-            });
-            
-            const mediaPorBox = boxesComSituacao > 0 ? (count / boxesComSituacao).toFixed(1) : 0;
-            
-            detailedHTML += `
-                <tr>
-                    <td><strong>${sit}</strong></td>
-                    <td>${count.toLocaleString('pt-BR')}</td>
-                    <td>${percent}%</td>
-                    <td>${boxesComSituacao.toLocaleString('pt-BR')}</td>
-                    <td>${mediaPorBox}</td>
-                </tr>
-            `;
-        });
+// ==================== ANÁLISE DETALHADA ====================
+let tabelaDet = '<table border="1"><tr><th>Situação</th><th>Boxes</th><th>Média</th></tr>';
 
-        detailedHTML += '</tbody></table>';
-        tabelaDetalhada.innerHTML = detailedHTML;
-    </script>
+situacoesOrdenadas.forEach(([sit, total]) => {
+    let boxesCom = 0;
+    Object.values(boxesData).forEach(box => {
+        if (box.situacoes && box.situacoes[sit]) boxesCom++;
+    });
+
+    const media = boxesCom ? (total / boxesCom).toFixed(1) : 0;
+    tabelaDet += `<tr><td>${sit}</td><td>${boxesCom}</td><td>${media}</td></tr>`;
+});
+
+tabelaDet += '</table>';
+document.getElementById('tabelaDetalhada').innerHTML = tabelaDet;
+
+</script>
+
 </body>
 </html>
