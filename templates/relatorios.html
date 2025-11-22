@@ -491,10 +491,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Situação</th>
+                        <th>Status</th>
                         <th>Total Docs</th>
                         <th>% do Total</th>
-                        <th>Boxes Estimados</th>
+                        <th>Boxes com este Status</th>
                         <th>Média por Box</th>
                     </tr>
                 </thead>
@@ -504,17 +504,29 @@
         situacoesOrdenadas.forEach(([sit, count]) => {
             const percent = ((count / data.total_geral) * 100).toFixed(2);
             
-            // Estimar boxes com esta situação baseado na proporção
-            // Como não temos boxes_data completo, fazemos uma estimativa
-            const boxesEstimados = Math.round((count / data.total_geral) * data.boxes_ocupados);
-            const mediaPorBox = boxesEstimados > 0 ? (count / boxesEstimados).toFixed(1) : 0;
+            // Contar boxes que contêm este status
+            let boxesComStatus = 0;
+            if (data.status_por_box) {
+                const boxesUnicos = new Set();
+                data.status_por_box.forEach(item => {
+                    if (item.Status === sit) {
+                        boxesUnicos.add(item.Box);
+                    }
+                });
+                boxesComStatus = boxesUnicos.size;
+            } else {
+                // Fallback: estimar
+                boxesComStatus = Math.round((count / data.total_geral) * data.boxes_ocupados);
+            }
+            
+            const mediaPorBox = boxesComStatus > 0 ? (count / boxesComStatus).toFixed(1) : 0;
             
             detailedHTML += `
                 <tr>
                     <td><strong>${sit}</strong></td>
                     <td>${count.toLocaleString('pt-BR')}</td>
                     <td>${percent}%</td>
-                    <td>~${boxesEstimados.toLocaleString('pt-BR')}</td>
+                    <td>${boxesComStatus.toLocaleString('pt-BR')}</td>
                     <td>${mediaPorBox}</td>
                 </tr>
             `;
