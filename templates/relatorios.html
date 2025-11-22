@@ -296,17 +296,46 @@
     </div>
 
     <script>
+        console.log('=== Iniciando página de relatórios ===');
+        
         const dataStr = sessionStorage.getItem('relatoriosData');
+        console.log('Dados do sessionStorage:', dataStr ? 'Encontrados' : 'NÃO encontrados');
+        
         if (!dataStr) {
-            alert('Nenhum dado encontrado. Redirecionando...');
+            console.error('Nenhum dado encontrado no sessionStorage');
+            alert('Nenhum dado encontrado. Você precisa fazer upload de um arquivo primeiro. Redirecionando...');
             window.location.href = '/';
+            throw new Error('Sem dados');
         }
 
-        const data = JSON.parse(dataStr);
+        let data;
+        try {
+            data = JSON.parse(dataStr);
+            console.log('Dados parseados com sucesso:', {
+                total_geral: data.total_geral,
+                boxes_ocupados: data.boxes_ocupados,
+                situacoes: data.colunas_situacoes?.length || 0
+            });
+        } catch (e) {
+            console.error('Erro ao fazer parse dos dados:', e);
+            alert('Erro ao carregar dados. Redirecionando...');
+            window.location.href = '/';
+            throw e;
+        }
+
+        // Verificar se os dados estão completos
+        if (!data.total_geral || !data.boxes_ocupados || !data.colunas_situacoes) {
+            console.error('Dados incompletos:', data);
+            alert('Dados incompletos ou corrompidos. Faça upload novamente.');
+            window.location.href = '/';
+            throw new Error('Dados incompletos');
+        }
 
         // Ocultar loading
         document.getElementById('loading').style.display = 'none';
         document.getElementById('content').style.display = 'block';
+        
+        console.log('Página carregada, iniciando renderização...');
 
         // ==== RESUMO EXECUTIVO ====
         const summaryGrid = document.getElementById('summaryGrid');
