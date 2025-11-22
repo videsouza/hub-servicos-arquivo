@@ -150,6 +150,39 @@ def upload_file():
 def visualizar():
     return render_template('visualizacao.html')
 
+@app.route('/upload-relatorios', methods=['POST'])
+def upload_relatorios():
+    if 'file' not in request.files:
+        return jsonify({'error': 'Nenhum arquivo enviado'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+    
+    if file and allowed_file(file.filename):
+        try:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            
+            # Processar arquivo (usa a mesma função)
+            dados = processar_excel(filepath)
+            
+            # Remover arquivo temporário
+            os.remove(filepath)
+            
+            return jsonify(dados)
+        
+        except Exception as e:
+            return jsonify({'error': f'Erro ao processar arquivo: {str(e)}'}), 500
+    
+    return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
+
+@app.route('/relatorios')
+def relatorios():
+    return render_template('relatorios.html')
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
