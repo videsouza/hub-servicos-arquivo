@@ -4,6 +4,7 @@ import colorsys
 import os
 from werkzeug.utils import secure_filename
 import tempfile
+import traceback
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
@@ -30,89 +31,86 @@ def gerar_cores_distintas(n):
 
 def processar_excel(filepath):
     """Processa o arquivo Excel e retorna os dados estruturados"""
-    try:
-        # Ler arquivo Excel - cabeçalhos na linha 3 (índice 2)
-        df = pd.read_excel(filepath, header=2)
+    # Ler arquivo Excel - cabeçalhos na linha 3 (índice 2)
+    df = pd.read_excel(filepath, header=2)
+    
+    # Renomear primeira coluna para 'Box' se necessário
+    if df.columns[0] != 'Box':
+        df = df.rename(columns={df.columns[0]: 'Box'})
+    
+    # Converter coluna Box para numérico
+    df['Box'] = pd.to_numeric(df['Box'], errors='coerce')
+    
+    # Remover linhas onde Box não é número válido
+    df = df.dropna(subset=['Box'])
+    df['Box'] = df['Box'].astype(int)
+    
+    # Filtrar apenas boxes de 1 a 7000
+    df = df[(df['Box'] >= 1) & (df['Box'] <= 7000)]
+    
+    # Identificar colunas de situações (excluir 'Box' e 'Total')
+    colunas_situacoes = [col for col in df.columns if col not in ['Box', 'Total', 'total', 'TOTAL']]
+    
+    # Preencher NaN com 0 nas colunas de situações
+    for col in colunas_situacoes:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+    
+    # Criar estrutura de dados para visualização
+    boxes_data = {}
+    
+    for box_num in range(1, 7001):
+        box_row = df[df['Box'] == box_num]
         
-        # Renomear primeira coluna para 'Box' se necessário
-        if df.columns[0] != 'Box':
-            df = df.rename(columns={df.columns[0]: 'Box'})
-        
-        # Converter coluna Box para numérico
-        df['Box'] = pd.to_numeric(df['Box'], errors='coerce')
-        
-        # Remover linhas onde Box não é número válido
-        df = df.dropna(subset=['Box'])
-        df['Box'] = df['Box'].astype(int)
-        
-        # Filtrar apenas boxes de 1 a 7000
-        df = df[(df['Box'] >= 1) & (df['Box'] <= 7000)]
-        
-        # Identificar colunas de situações (excluir 'Box' e 'Total')
-        colunas_situacoes = [col for col in df.columns if col not in ['Box', 'Total', 'total', 'TOTAL']]
-        
-        # Preencher NaN com 0 nas colunas de situações
-        for col in colunas_situacoes:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
-        
-        # Criar estrutura de dados para visualização
-        boxes_data = {}
-        
-        for box_num in range(1, 7001):
-            box_row = df[df['Box'] == box_num]
+        if len(box_row) == 0:
+            boxes_data[box_num] = {
+                'total': 0,
+                'situacoes': {},
+                'percentuais': {}
+            }
+        else:
+            box_row = box_row.iloc[0]
+            situacoes = {}
+            percentuais = {}
+            total_box = 0
             
-            if len(box_row) == 0:
-                boxes_data[box_num] = {
-                    'total': 0,
-                    'situacoes': {},
-                    'percentuais': {}
-                }
-            else:
-                box_row = box_row.iloc[0]
-                situacoes = {}
-                percentuais = {}
-                total_box = 0
-                
-                for col in colunas_situacoes:
-                    count = int(box_row[col])
-                    if count > 0:
-                        situacoes[col] = count
-                        total_box += count
-                
-                if total_box > 0:
-                    for sit, count in situacoes.items():
-                        percentuais[sit] = (count / total_box) * 100
-                
-                boxes_data[box_num] = {
-                    'total': total_box,
-                    'situacoes': situacoes,
-                    'percentuais': percentuais
-                }
-        
-        # Calcular estatísticas
-        totais_por_situacao = {}
-        for col in colunas_situacoes:
-            total = df[col].sum()
-            totais_por_situacao[col] = int(total)
-        
-        total_geral = sum(totais_por_situacao.values())
-        boxes_ocupados = len(df[df[colunas_situacoes].sum(axis=1) > 0])
-        
-        # Gerar cores
-        cores_situacoes = gerar_cores_distintas(len(colunas_situacoes))
-        mapa_cores = dict(zip(colunas_situacoes, cores_situacoes))
-        
-        return {
-            'boxes_data': boxes_data,
-            'colunas_situacoes': colunas_situacoes,
-            'mapa_cores': mapa_cores,
-            'totais_por_situacao': totais_por_situacao,
-            'total_geral': total_geral,
-            'boxes_ocupados': boxes_ocupados,
-            'total_boxes': len(df)
-        }
-    except Exception as e:
-        raise Exception(f'Erro ao processar Excel: {str(e)}')
+            for col in colunas_situacoes:
+                count = int(box_row[col])
+                if count > 0:
+                    situacoes[col] = count
+                    total_box += count
+            
+            if total_box > 0:
+                for sit, count in situacoes.items():
+                    percentuais[sit] = (count / total_box) * 100
+            
+            boxes_data[box_num] = {
+                'total': total_box,
+                'situacoes': situacoes,
+                'percentuais': percentuais
+            }
+    
+    # Calcular estatísticas
+    totais_por_situacao = {}
+    for col in colunas_situacoes:
+        total = df[col].sum()
+        totais_por_situacao[col] = int(total)
+    
+    total_geral = sum(totais_por_situacao.values())
+    boxes_ocupados = len(df[df[colunas_situacoes].sum(axis=1) > 0])
+    
+    # Gerar cores
+    cores_situacoes = gerar_cores_distintas(len(colunas_situacoes))
+    mapa_cores = dict(zip(colunas_situacoes, cores_situacoes))
+    
+    return {
+        'boxes_data': boxes_data,
+        'colunas_situacoes': colunas_situacoes,
+        'mapa_cores': mapa_cores,
+        'totais_por_situacao': totais_por_situacao,
+        'total_geral': total_geral,
+        'boxes_ocupados': boxes_ocupados,
+        'total_boxes': len(df)
+    }
 
 @app.route('/')
 def index():
@@ -120,34 +118,44 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    print("=== ROTA /upload CHAMADA ===")
     try:
         if 'file' not in request.files:
+            print("Erro: Nenhum arquivo no request")
             return jsonify({'error': 'Nenhum arquivo enviado'}), 400
         
         file = request.files['file']
+        print(f"Arquivo recebido: {file.filename}")
         
         if file.filename == '':
+            print("Erro: Nome do arquivo vazio")
             return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
         
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
+            print("Erro: Tipo de arquivo não permitido")
+            return jsonify({'error': 'Tipo de arquivo não permitido. Use .xls ou .xlsx'}), 400
         
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        print(f"Salvando em: {filepath}")
         file.save(filepath)
         
-        # Processar arquivo
+        print("Processando arquivo...")
         dados = processar_excel(filepath)
+        print(f"Processamento concluído. Total de documentos: {dados['total_geral']}")
         
         # Remover arquivo temporário
         try:
             os.remove(filepath)
-        except:
-            pass
+            print("Arquivo temporário removido")
+        except Exception as e:
+            print(f"Erro ao remover arquivo: {e}")
         
         return jsonify(dados)
         
     except Exception as e:
+        print(f"ERRO: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 @app.route('/visualizar')
@@ -156,45 +164,68 @@ def visualizar():
 
 @app.route('/upload-relatorios', methods=['POST'])
 def upload_relatorios():
+    print("=== ROTA /upload-relatorios CHAMADA ===")
     try:
         if 'file' not in request.files:
+            print("Erro: Nenhum arquivo no request")
             return jsonify({'error': 'Nenhum arquivo enviado'}), 400
         
         file = request.files['file']
+        print(f"Arquivo recebido: {file.filename}")
         
         if file.filename == '':
+            print("Erro: Nome do arquivo vazio")
             return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
         
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
+            print("Erro: Tipo de arquivo não permitido")
+            return jsonify({'error': 'Tipo de arquivo não permitido. Use .xls ou .xlsx'}), 400
         
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        print(f"Salvando em: {filepath}")
         file.save(filepath)
         
-        # Processar arquivo
+        print("Processando arquivo para relatórios...")
         dados = processar_excel(filepath)
+        print(f"Processamento concluído. Total de documentos: {dados['total_geral']}")
         
         # Remover arquivo temporário
         try:
             os.remove(filepath)
-        except:
-            pass
+            print("Arquivo temporário removido")
+        except Exception as e:
+            print(f"Erro ao remover arquivo: {e}")
         
         return jsonify(dados)
         
     except Exception as e:
+        print(f"ERRO: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 @app.route('/relatorios')
 def relatorios():
     return render_template('relatorios.html')
 
-# Rota de health check para o Render
 @app.route('/health')
 def health():
-    return jsonify({'status': 'ok'}), 200
+    return jsonify({'status': 'ok', 'message': 'Servidor funcionando'}), 200
+
+# Lista todas as rotas registradas
+@app.route('/routes')
+def list_routes():
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append({
+            'endpoint': rule.endpoint,
+            'methods': list(rule.methods),
+            'path': str(rule)
+        })
+    return jsonify(routes)
 
 if __name__ == '__main__':
+    print("=== INICIANDO SERVIDOR ===")
+    print(f"Pasta de upload: {app.config['UPLOAD_FOLDER']}")
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
