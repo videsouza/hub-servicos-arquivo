@@ -31,40 +31,53 @@ def gerar_cores_distintas(n):
 
 def processar_excel_novo_formato(filepath, para_visualizacao=True):
     """
-    Processa o arquivo Excel no formato real:
-    SETOR | DATA | STATUS | BOX | COD | TIPO | ELIM_PREVISTA
+    Processa o arquivo Excel no formato real - VERSÃO OTIMIZADA
     """
     print(f"Processando arquivo (visualização={para_visualizacao})...")
     
     try:
-        # Ler todas as planilhas
+        # Ler arquivo em chunks para economizar memória
         excel_file = pd.ExcelFile(filepath)
         print(f"Planilhas encontradas: {excel_file.sheet_names}")
         
-        # Concatenar todas as planilhas, REMOVENDO LINHAS VAZIAS
-        dfs = []
+        # Processar planilha por planilha
+        df_list = []
+        total_linhas_lidas = 0
+        
         for sheet_name in excel_file.sheet_names:
-            print(f"Lendo planilha '{sheet_name}'...")
-            df_temp = pd.read_excel(filepath, sheet_name=sheet_name)
+            print(f"Processando planilha '{sheet_name}'...")
             
-            # REMOVER linhas completamente vazias
+            # Ler planilha
+            df_temp = pd.read_excel(
+                filepath, 
+                sheet_name=sheet_name,
+                usecols=None  # Ler todas as colunas primeiro
+            )
+            
+            total_linhas_lidas += len(df_temp)
+            print(f"  Linhas brutas: {len(df_temp)}")
+            
+            # Remover linhas completamente vazias IMEDIATAMENTE
             df_temp = df_temp.dropna(how='all')
-            
-            print(f"Planilha '{sheet_name}': {len(df_temp)} linhas (após remover vazias)")
+            print(f"  Após remover vazias: {len(df_temp)}")
             
             if len(df_temp) > 0:
-                dfs.append(df_temp)
+                df_list.append(df_temp)
+            
+            # Limpar memória
+            del df_temp
         
-        if not dfs:
-            raise Exception("Nenhum dado encontrado nas planilhas")
+        if not df_list:
+            raise Exception("Nenhum dado válido encontrado nas planilhas")
         
-        df = pd.concat(dfs, ignore_index=True)
-        print(f"Total de linhas após concatenar: {len(df)}")
+        # Concatenar
+        print("Concatenando planilhas...")
+        df = pd.concat(df_list, ignore_index=True)
+        del df_list  # Liberar memória
         
-        # Mostrar apenas primeiras colunas para não logar demais
-        print(f"Primeiras colunas: {list(df.columns[:10])}")
+        print(f"Total após concatenar: {len(df)} linhas (de {total_linhas_lidas} originais)")
         
-        # Identificar colunas (case-insensitive)
+        # Identificar colunas BOX e STATUS
         colunas_map = {}
         for col in df.columns:
             col_upper = str(col).upper().strip()
@@ -72,85 +85,68 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                 colunas_map['BOX'] = col
             elif 'STATUS' in col_upper or 'SITUAÇÃO' in col_upper or 'SITUACAO' in col_upper:
                 colunas_map['STATUS'] = col
-            elif 'SETOR' in col_upper:
-                colunas_map['SETOR'] = col
-            elif 'COD' in col_upper and 'TIPO' not in col_upper:
-                colunas_map['COD'] = col
-            elif 'TIPO' in col_upper:
-                colunas_map['TIPO'] = col
         
-        print(f"Mapeamento de colunas: {colunas_map}")
+        print(f"Colunas identificadas: {colunas_map}")
         
-        # Verificar se encontrou as colunas essenciais
-        if 'BOX' not in colunas_map or 'STATUS' not in colunas_map:
-            raise Exception(f"Colunas essenciais não encontradas. Colunas disponíveis: {list(df.columns)}")
+        if 'BOX' not in colunas_map:
+            raise Exception(f"Coluna BOX não encontrada. Colunas disponíveis: {list(df.columns)}")
+        if 'STATUS' not in colunas_map:
+            raise Exception(f"Coluna STATUS não encontrada. Colunas disponíveis: {list(df.columns)}")
         
-        # Renomear colunas para padrão
-        df = df.rename(columns={
-            colunas_map.get('BOX'): 'Box',
-            colunas_map.get('STATUS'): 'Status'
-        })
+        # Manter apenas colunas essenciais para economizar memória
+        df = df[[colunas_map['BOX'], colunas_map['STATUS']]]
+        df.columns = ['Box', 'Status']
         
-        # LIMPAR: remover linhas onde Box está vazio
+        print("Limpando dados...")
+        
+        # Remover linhas onde Box está vazio
         df = df[df['Box'].notna()]
+        df = df[df['Box'] != '']
         
-        # Converter coluna Box para numérico (remover textos, espaços, etc)
-        df['Box'] = df['Box'].astype(str).str.replace(r'[^\d]', '', regex=True)
+        # Converter Box para numérico
+        df['Box'] = df['Box'].astype(str).str.strip()
+        df['Box'] = df['Box'].str.replace(r'[^\d]', '', regex=True)
         df['Box'] = pd.to_numeric(df['Box'], errors='coerce')
         
-        # Remover linhas sem Box válido
+        # Remover inválidos
         df = df.dropna(subset=['Box'])
         df['Box'] = df['Box'].astype(int)
         
-        # Filtrar boxes de 1 a 7000
+        # Filtrar range válido
         df = df[(df['Box'] >= 1) & (df['Box'] <= 7000)]
-        print(f"Documentos válidos em boxes (1-7000): {len(df)}")
+        
+        print(f"Documentos válidos: {len(df)}")
         
         if len(df) == 0:
-            raise Exception("Nenhum documento encontrado em boxes válidos (1-7000)")
+            raise Exception("Nenhum documento com Box válido (1-7000) foi encontrado")
         
-        # Preencher Status vazios
-        df['Status'] = df['Status'].fillna('SEM STATUS')
+        # Limpar Status
+        df['Status'] = df['Status'].fillna('SEM STATUS').astype(str).str.strip()
         
-        # Obter lista de status únicos
+        # Estatísticas básicas
         status_unicos = df['Status'].unique()
-        print(f"Status únicos encontrados: {len(status_unicos)}")
-        
-        # Contar documentos por status
         totais_por_status = df['Status'].value_counts().to_dict()
-        
-        # Total de documentos
         total_geral = len(df)
-        
-        # Contar boxes únicos ocupados
         boxes_ocupados = df['Box'].nunique()
-        total_boxes = len(df['Box'].unique())
         
-        print(f"Total de documentos: {total_geral}")
-        print(f"Boxes ocupados: {boxes_ocupados}")
+        print(f"✓ Total: {total_geral} docs, {boxes_ocupados} boxes, {len(status_unicos)} status")
         
-        # Gerar cores
+        # Cores
         cores_status = gerar_cores_distintas(len(status_unicos))
         mapa_cores = dict(zip(status_unicos, cores_status))
         
-        # Se for para visualização, criar boxes_data completo
+        # Boxes data (apenas se necessário)
         boxes_data = {}
+        dados_extras = {}
+        
         if para_visualizacao:
-            print("Gerando estrutura de visualização de boxes...")
-            
-            # Agrupar documentos por box
+            print("Gerando boxes_data...")
             grupos_box = df.groupby('Box')
             
-            # Processar cada box (apenas os que existem)
             for box_num, docs_box in grupos_box:
-                # Contar por status
                 status_count = docs_box['Status'].value_counts().to_dict()
                 total_box = len(docs_box)
-                
-                # Calcular percentuais
-                percentuais = {}
-                for status, count in status_count.items():
-                    percentuais[status] = (count / total_box) * 100
+                percentuais = {s: (c/total_box)*100 for s, c in status_count.items()}
                 
                 boxes_data[int(box_num)] = {
                     'total': total_box,
@@ -158,25 +154,17 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                     'percentuais': percentuais
                 }
             
-            # Adicionar boxes vazios (1-7000)
-            print("Adicionando boxes vazios...")
+            # Adicionar vazios
             for box_num in range(1, 7001):
                 if box_num not in boxes_data:
-                    boxes_data[box_num] = {
-                        'total': 0,
-                        'situacoes': {},
-                        'percentuais': {}
-                    }
-        
-        # Para relatórios, incluir dados adicionais (versão otimizada)
-        dados_extras = {}
-        if not para_visualizacao:
-            print("Preparando dados extras para relatórios...")
-            # Estatísticas por status e box (limitado para economizar memória)
+                    boxes_data[box_num] = {'total': 0, 'situacoes': {}, 'percentuais': {}}
+        else:
+            # Relatórios: dados extras leves
+            print("Gerando dados para relatórios...")
             status_por_box = df.groupby(['Box', 'Status']).size().reset_index(name='count')
             dados_extras['status_por_box'] = status_por_box.to_dict('records')
         
-        print("Processamento concluído!")
+        print("✓ Processamento concluído!")
         
         resultado = {
             'boxes_data': boxes_data,
@@ -185,17 +173,16 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
             'totais_por_situacao': totais_por_status,
             'total_geral': total_geral,
             'boxes_ocupados': boxes_ocupados,
-            'total_boxes': total_boxes
+            'total_boxes': boxes_ocupados
         }
         
-        # Adicionar dados extras para relatórios
         if not para_visualizacao:
             resultado.update(dados_extras)
         
         return resultado
         
     except Exception as e:
-        print(f"Erro no processamento: {str(e)}")
+        print(f"✗ ERRO: {str(e)}")
         print(traceback.format_exc())
         raise
 
