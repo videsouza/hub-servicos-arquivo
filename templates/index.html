@@ -640,10 +640,22 @@
             message.style.display = 'none';
 
             try {
+                console.log('Enviando arquivo para /upload...');
+                
                 const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
+
+                console.log('Status da resposta:', response.status);
+                
+                // Verificar se a resposta é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.error('Resposta não é JSON:', textResponse);
+                    throw new Error('Servidor retornou resposta inválida. Verifique os logs.');
+                }
 
                 const data = await response.json();
 
@@ -655,6 +667,7 @@
                 window.location.href = '/visualizar';
 
             } catch (error) {
+                console.error('Erro:', error);
                 showMessage(error.message, 'error');
             } finally {
                 uploadBtn.disabled = false;
@@ -734,21 +747,40 @@
             messageRelatorios.style.display = 'none';
 
             try {
+                console.log('Enviando arquivo para /upload-relatorios...');
+                
                 const response = await fetch('/upload-relatorios', {
                     method: 'POST',
                     body: formData
                 });
 
+                console.log('Status da resposta:', response.status);
+                console.log('Content-Type:', response.headers.get('content-type'));
+
+                // Verificar se a resposta é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.error('Resposta não é JSON:', textResponse);
+                    throw new Error('Servidor retornou resposta inválida. Verifique os logs.');
+                }
+
                 const data = await response.json();
+                console.log('Dados recebidos:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Erro ao processar arquivo');
                 }
 
+                // Salvar no sessionStorage
                 sessionStorage.setItem('relatoriosData', JSON.stringify(data));
+                console.log('Dados salvos no sessionStorage');
+
+                // Redirecionar
                 window.location.href = '/relatorios';
 
             } catch (error) {
+                console.error('Erro completo:', error);
                 showMessageRelatorios(error.message, 'error');
             } finally {
                 uploadBtnRelatorios.disabled = false;
