@@ -85,6 +85,12 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                 colunas_map['BOX'] = col
             elif 'STATUS' in col_upper or 'SITUAÇÃO' in col_upper or 'SITUACAO' in col_upper:
                 colunas_map['STATUS'] = col
+            elif 'SETOR' in col_upper:
+                colunas_map['SETOR'] = col
+            elif 'COD' in col_upper and 'TIPO' not in col_upper:
+                colunas_map['COD'] = col
+            elif 'TIPO' in col_upper:
+                colunas_map['TIPO'] = col
         
         print(f"Colunas identificadas: {colunas_map}")
         
@@ -93,9 +99,26 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
         if 'STATUS' not in colunas_map:
             raise Exception(f"Coluna STATUS não encontrada. Colunas disponíveis: {list(df.columns)}")
         
-        # Manter apenas colunas essenciais para economizar memória
-        df = df[[colunas_map['BOX'], colunas_map['STATUS']]]
-        df.columns = ['Box', 'Status']
+        # Manter colunas essenciais + COD, SETOR, TIPO para análises
+        colunas_manter = ['Box', 'Status']
+        rename_map = {
+            colunas_map['BOX']: 'Box',
+            colunas_map['STATUS']: 'Status'
+        }
+        
+        if 'COD' in colunas_map:
+            colunas_manter.append('COD')
+            rename_map[colunas_map['COD']] = 'COD'
+        if 'SETOR' in colunas_map:
+            colunas_manter.append('SETOR')
+            rename_map[colunas_map['SETOR']] = 'SETOR'
+        if 'TIPO' in colunas_map:
+            colunas_manter.append('TIPO')
+            rename_map[colunas_map['TIPO']] = 'TIPO'
+        
+        # Selecionar apenas colunas necessárias
+        df = df[[col for col in df.columns if col in rename_map.keys()]]
+        df = df.rename(columns=rename_map)
         
         print("Limpando dados...")
         
@@ -122,6 +145,19 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
         
         # Limpar Status
         df['Status'] = df['Status'].fillna('SEM STATUS').astype(str).str.strip()
+        
+        # Limpar COD e SETOR se existirem
+        if 'COD' in df.columns:
+            df['COD'] = df['COD'].fillna('NÃO INFORMADO').astype(str).str.strip()
+            df['COD'] = df['COD'].replace('', 'NÃO INFORMADO')
+        
+        if 'SETOR' in df.columns:
+            df['SETOR'] = df['SETOR'].fillna('NÃO INFORMADO').astype(str).str.strip()
+            df['SETOR'] = df['SETOR'].replace('', 'NÃO INFORMADO')
+        
+        if 'TIPO' in df.columns:
+            df['TIPO'] = df['TIPO'].fillna('NÃO INFORMADO').astype(str).str.strip()
+            df['TIPO'] = df['TIPO'].replace('', 'NÃO INFORMADO')
         
         # Estatísticas básicas
         status_unicos = df['Status'].unique()
@@ -163,6 +199,55 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
             print("Gerando dados para relatórios...")
             status_por_box = df.groupby(['Box', 'Status']).size().reset_index(name='count')
             dados_extras['status_por_box'] = status_por_box.to_dict('records')
+            
+            # Análises adicionais: COD, SETOR, TIPO
+            if 'COD' in df.columns:
+                print("Gerando tabela de frequência para COD...")
+                freq_cod = df['COD'].value_counts().reset_index()
+                freq_cod.columns = ['Variável', 'Freq_Absoluta']
+                freq_cod['Freq_Relativa'] = (freq_cod['Freq_Absoluta'] / len(df) * 100).round(2)
+                freq_cod['Freq_Rel_Acumulada'] = freq_cod['Freq_Relativa'].cumsum().round(2)
+                dados_extras['freq_cod'] = freq_cod.to_dict('records')
+                
+                # COD mais frequente -> Análise por TIPO
+                if len(freq_cod) > 0 and 'TIPO' in df.columns:
+                    cod_mais_freq = freq_cod.iloc[0]['Variável']
+                    df_cod_top = df[df['COD'] == cod_mais_freq]
+                    
+                    freq_tipo_cod = df_cod_top['TIPO'].value_counts().reset_index()
+                    freq_tipo_cod.columns = ['Variável', 'Freq_Absoluta']
+                    freq_tipo_cod['Freq_Relativa'] = (freq_tipo_cod['Freq_Absoluta'] / len(df_cod_top) * 100).round(2)
+                    freq_tipo_cod['Freq_Rel_Acumulada'] = freq_tipo_cod['Freq_Relativa'].cumsum().round(2)
+                    
+                    dados_extras['freq_tipo_por_cod_top'] = {
+                        'cod': str(cod_mais_freq),
+                        'total_docs': int(freq_cod.iloc[0]['Freq_Absoluta']),
+                        'dados': freq_tipo_cod.to_dict('records')
+                    }
+            
+            if 'SETOR' in df.columns:
+                print("Gerando tabela de frequência para SETOR...")
+                freq_setor = df['SETOR'].value_counts().reset_index()
+                freq_setor.columns = ['Variável', 'Freq_Absoluta']
+                freq_setor['Freq_Relativa'] = (freq_setor['Freq_Absoluta'] / len(df) * 100).round(2)
+                freq_setor['Freq_Rel_Acumulada'] = freq_setor['Freq_Relativa'].cumsum().round(2)
+                dados_extras['freq_setor'] = freq_setor.to_dict('records')
+                
+                # SETOR mais frequente -> Análise por TIPO
+                if len(freq_setor) > 0 and 'TIPO' in df.columns:
+                    setor_mais_freq = freq_setor.iloc[0]['Variável']
+                    df_setor_top = df[df['SETOR'] == setor_mais_freq]
+                    
+                    freq_tipo_setor = df_setor_top['TIPO'].value_counts().reset_index()
+                    freq_tipo_setor.columns = ['Variável', 'Freq_Absoluta']
+                    freq_tipo_setor['Freq_Relativa'] = (freq_tipo_setor['Freq_Absoluta'] / len(df_setor_top) * 100).round(2)
+                    freq_tipo_setor['Freq_Rel_Acumulada'] = freq_tipo_setor['Freq_Relativa'].cumsum().round(2)
+                    
+                    dados_extras['freq_tipo_por_setor_top'] = {
+                        'setor': str(setor_mais_freq),
+                        'total_docs': int(freq_setor.iloc[0]['Freq_Absoluta']),
+                        'dados': freq_tipo_setor.to_dict('records')
+                    }
         
         print("✓ Processamento concluído!")
         
