@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios Estatísticos - Sistema de Arquivo v9</title>
+    <title>Relatórios Estatísticos - Sistema de Arquivo</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
         * {
@@ -535,8 +535,17 @@
         detailedHTML += '</tbody></table>';
         tabelaDetalhada.innerHTML = detailedHTML;
 
+        // ==== DEBUG: Verificar dados disponíveis ====
+        console.log('Dados disponíveis:', {
+            freq_cod: data.freq_cod ? 'SIM' : 'NÃO',
+            freq_tipo_por_cod_top: data.freq_tipo_por_cod_top ? 'SIM' : 'NÃO',
+            freq_setor: data.freq_setor ? 'SIM' : 'NÃO',
+            freq_tipo_por_setor_top: data.freq_tipo_por_setor_top ? 'SIM' : 'NÃO'
+        });
+
         // ==== TABELA DE FREQUÊNCIA: COD ====
-        if (data.freq_cod) {
+        if (data.freq_cod && data.freq_cod.length > 0) {
+            console.log('Exibindo tabela COD com', data.freq_cod.length, 'registros');
             document.getElementById('sectionFreqCod').style.display = 'block';
             const tabelaFreqCod = document.getElementById('tabelaFreqCod');
             
@@ -569,7 +578,8 @@
         }
 
         // ==== ANÁLISE DE TIPO PARA COD MAIS FREQUENTE ====
-        if (data.freq_tipo_por_cod_top) {
+        if (data.freq_tipo_por_cod_top && data.freq_tipo_por_cod_top.dados && data.freq_tipo_por_cod_top.dados.length > 0) {
+            console.log('Exibindo análise TIPO por COD:', data.freq_tipo_por_cod_top.cod);
             document.getElementById('sectionTipoCod').style.display = 'block';
             
             const insightCodTop = document.getElementById('insightCodTop');
@@ -611,7 +621,8 @@
         }
 
         // ==== TABELA DE FREQUÊNCIA: SETOR ====
-        if (data.freq_setor) {
+        if (data.freq_setor && data.freq_setor.length > 0) {
+            console.log('Exibindo tabela SETOR com', data.freq_setor.length, 'registros');
             document.getElementById('sectionFreqSetor').style.display = 'block';
             const tabelaFreqSetor = document.getElementById('tabelaFreqSetor');
             
@@ -644,7 +655,8 @@
         }
 
         // ==== ANÁLISE DE TIPO PARA SETOR MAIS FREQUENTE ====
-        if (data.freq_tipo_por_setor_top) {
+        if (data.freq_tipo_por_setor_top && data.freq_tipo_por_setor_top.dados && data.freq_tipo_por_setor_top.dados.length > 0) {
+            console.log('Exibindo análise TIPO por SETOR:', data.freq_tipo_por_setor_top.setor);
             document.getElementById('sectionTipoSetor').style.display = 'block';
             
             const insightSetorTop = document.getElementById('insightSetorTop');
