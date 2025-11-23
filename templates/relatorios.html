@@ -549,7 +549,14 @@
         console.log('Verificando freq_cod...');
         if (data.freq_cod && data.freq_cod.length > 0) {
             console.log('✓ Exibindo tabela COD com', data.freq_cod.length, 'registros');
-            document.getElementById('sectionFreqCod').style.display = 'block';
+            
+            const sectionCod = document.getElementById('sectionFreqCod');
+            if (sectionCod) {
+                sectionCod.style.display = 'block';
+            } else {
+                console.error('✗ Elemento sectionFreqCod não encontrado!');
+            }
+            
             const tabelaFreqCod = document.getElementById('tabelaFreqCod');
             
             let codHTML = `
@@ -587,7 +594,13 @@
         console.log('Verificando freq_tipo_por_cod_top...');
         if (data.freq_tipo_por_cod_top && data.freq_tipo_por_cod_top.dados && data.freq_tipo_por_cod_top.dados.length > 0) {
             console.log('✓ Exibindo análise TIPO por COD:', data.freq_tipo_por_cod_top.cod);
-            document.getElementById('sectionTipoCod').style.display = 'block';
+            
+            const sectionTipoCod = document.getElementById('sectionTipoCod');
+            if (sectionTipoCod) {
+                sectionTipoCod.style.display = 'block';
+            } else {
+                console.error('✗ Elemento sectionTipoCod não encontrado!');
+            }
             
             const insightCodTop = document.getElementById('insightCodTop');
             insightCodTop.innerHTML = `
@@ -634,7 +647,14 @@
         console.log('Verificando freq_setor...');
         if (data.freq_setor && data.freq_setor.length > 0) {
             console.log('✓ Exibindo tabela SETOR com', data.freq_setor.length, 'registros');
-            document.getElementById('sectionFreqSetor').style.display = 'block';
+            
+            const sectionSetor = document.getElementById('sectionFreqSetor');
+            if (sectionSetor) {
+                sectionSetor.style.display = 'block';
+            } else {
+                console.error('✗ Elemento sectionFreqSetor não encontrado!');
+            }
+            
             const tabelaFreqSetor = document.getElementById('tabelaFreqSetor');
             
             let setorHTML = `
@@ -672,7 +692,13 @@
         console.log('Verificando freq_tipo_por_setor_top...');
         if (data.freq_tipo_por_setor_top && data.freq_tipo_por_setor_top.dados && data.freq_tipo_por_setor_top.dados.length > 0) {
             console.log('✓ Exibindo análise TIPO por SETOR:', data.freq_tipo_por_setor_top.setor);
-            document.getElementById('sectionTipoSetor').style.display = 'block';
+            
+            const sectionTipoSetor = document.getElementById('sectionTipoSetor');
+            if (sectionTipoSetor) {
+                sectionTipoSetor.style.display = 'block';
+            } else {
+                console.error('✗ Elemento sectionTipoSetor não encontrado!');
+            }
             
             const insightSetorTop = document.getElementById('insightSetorTop');
             insightSetorTop.innerHTML = `
