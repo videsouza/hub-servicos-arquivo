@@ -208,11 +208,13 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                 freq_cod['Freq_Relativa'] = (freq_cod['Freq_Absoluta'] / len(df) * 100).round(2)
                 freq_cod['Freq_Rel_Acumulada'] = freq_cod['Freq_Relativa'].cumsum().round(2)
                 dados_extras['freq_cod'] = freq_cod.to_dict('records')
+                print(f"  → {len(freq_cod)} códigos únicos encontrados")
                 
                 # COD mais frequente -> Análise por TIPO
                 if len(freq_cod) > 0 and 'TIPO' in df.columns:
                     cod_mais_freq = freq_cod.iloc[0]['Variável']
                     df_cod_top = df[df['COD'] == cod_mais_freq]
+                    print(f"  → COD mais frequente: '{cod_mais_freq}' ({len(df_cod_top)} documentos)")
                     
                     freq_tipo_cod = df_cod_top['TIPO'].value_counts().reset_index()
                     freq_tipo_cod.columns = ['Variável', 'Freq_Absoluta']
@@ -224,6 +226,9 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                         'total_docs': int(freq_cod.iloc[0]['Freq_Absoluta']),
                         'dados': freq_tipo_cod.to_dict('records')
                     }
+                    print(f"  → {len(freq_tipo_cod)} tipos únicos no COD top")
+            else:
+                print("  ⚠ Coluna COD não encontrada, análise ignorada")
             
             if 'SETOR' in df.columns:
                 print("Gerando tabela de frequência para SETOR...")
@@ -232,11 +237,13 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                 freq_setor['Freq_Relativa'] = (freq_setor['Freq_Absoluta'] / len(df) * 100).round(2)
                 freq_setor['Freq_Rel_Acumulada'] = freq_setor['Freq_Relativa'].cumsum().round(2)
                 dados_extras['freq_setor'] = freq_setor.to_dict('records')
+                print(f"  → {len(freq_setor)} setores únicos encontrados")
                 
                 # SETOR mais frequente -> Análise por TIPO
                 if len(freq_setor) > 0 and 'TIPO' in df.columns:
                     setor_mais_freq = freq_setor.iloc[0]['Variável']
                     df_setor_top = df[df['SETOR'] == setor_mais_freq]
+                    print(f"  → SETOR mais frequente: '{setor_mais_freq}' ({len(df_setor_top)} documentos)")
                     
                     freq_tipo_setor = df_setor_top['TIPO'].value_counts().reset_index()
                     freq_tipo_setor.columns = ['Variável', 'Freq_Absoluta']
@@ -248,6 +255,9 @@ def processar_excel_novo_formato(filepath, para_visualizacao=True):
                         'total_docs': int(freq_setor.iloc[0]['Freq_Absoluta']),
                         'dados': freq_tipo_setor.to_dict('records')
                     }
+                    print(f"  → {len(freq_tipo_setor)} tipos únicos no SETOR top")
+            else:
+                print("  ⚠ Coluna SETOR não encontrada, análise ignorada")
         
         print("✓ Processamento concluído!")
         
