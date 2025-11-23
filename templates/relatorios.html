@@ -535,17 +535,20 @@
         detailedHTML += '</tbody></table>';
         tabelaDetalhada.innerHTML = detailedHTML;
 
+        console.log('=== INICIANDO ANÁLISES ADICIONAIS ===');
+
         // ==== DEBUG: Verificar dados disponíveis ====
-        console.log('Dados disponíveis:', {
-            freq_cod: data.freq_cod ? 'SIM' : 'NÃO',
-            freq_tipo_por_cod_top: data.freq_tipo_por_cod_top ? 'SIM' : 'NÃO',
-            freq_setor: data.freq_setor ? 'SIM' : 'NÃO',
-            freq_tipo_por_setor_top: data.freq_tipo_por_setor_top ? 'SIM' : 'NÃO'
+        console.log('Dados extras recebidos:', {
+            freq_cod: data.freq_cod ? `SIM (${data.freq_cod.length} registros)` : 'NÃO',
+            freq_tipo_por_cod_top: data.freq_tipo_por_cod_top ? `SIM (COD: ${data.freq_tipo_por_cod_top.cod})` : 'NÃO',
+            freq_setor: data.freq_setor ? `SIM (${data.freq_setor.length} registros)` : 'NÃO',
+            freq_tipo_por_setor_top: data.freq_tipo_por_setor_top ? `SIM (SETOR: ${data.freq_tipo_por_setor_top.setor})` : 'NÃO'
         });
 
         // ==== TABELA DE FREQUÊNCIA: COD ====
+        console.log('Verificando freq_cod...');
         if (data.freq_cod && data.freq_cod.length > 0) {
-            console.log('Exibindo tabela COD com', data.freq_cod.length, 'registros');
+            console.log('✓ Exibindo tabela COD com', data.freq_cod.length, 'registros');
             document.getElementById('sectionFreqCod').style.display = 'block';
             const tabelaFreqCod = document.getElementById('tabelaFreqCod');
             
@@ -575,11 +578,15 @@
             
             codHTML += '</tbody></table>';
             tabelaFreqCod.innerHTML = codHTML;
+            console.log('✓ Tabela COD renderizada');
+        } else {
+            console.log('✗ freq_cod não disponível ou vazio');
         }
 
         // ==== ANÁLISE DE TIPO PARA COD MAIS FREQUENTE ====
+        console.log('Verificando freq_tipo_por_cod_top...');
         if (data.freq_tipo_por_cod_top && data.freq_tipo_por_cod_top.dados && data.freq_tipo_por_cod_top.dados.length > 0) {
-            console.log('Exibindo análise TIPO por COD:', data.freq_tipo_por_cod_top.cod);
+            console.log('✓ Exibindo análise TIPO por COD:', data.freq_tipo_por_cod_top.cod);
             document.getElementById('sectionTipoCod').style.display = 'block';
             
             const insightCodTop = document.getElementById('insightCodTop');
@@ -618,11 +625,15 @@
             
             tipoCodHTML += '</tbody></table>';
             tabelaTipoCod.innerHTML = tipoCodHTML;
+            console.log('✓ Análise TIPO por COD renderizada');
+        } else {
+            console.log('✗ freq_tipo_por_cod_top não disponível');
         }
 
         // ==== TABELA DE FREQUÊNCIA: SETOR ====
+        console.log('Verificando freq_setor...');
         if (data.freq_setor && data.freq_setor.length > 0) {
-            console.log('Exibindo tabela SETOR com', data.freq_setor.length, 'registros');
+            console.log('✓ Exibindo tabela SETOR com', data.freq_setor.length, 'registros');
             document.getElementById('sectionFreqSetor').style.display = 'block';
             const tabelaFreqSetor = document.getElementById('tabelaFreqSetor');
             
@@ -652,11 +663,15 @@
             
             setorHTML += '</tbody></table>';
             tabelaFreqSetor.innerHTML = setorHTML;
+            console.log('✓ Tabela SETOR renderizada');
+        } else {
+            console.log('✗ freq_setor não disponível ou vazio');
         }
 
         // ==== ANÁLISE DE TIPO PARA SETOR MAIS FREQUENTE ====
+        console.log('Verificando freq_tipo_por_setor_top...');
         if (data.freq_tipo_por_setor_top && data.freq_tipo_por_setor_top.dados && data.freq_tipo_por_setor_top.dados.length > 0) {
-            console.log('Exibindo análise TIPO por SETOR:', data.freq_tipo_por_setor_top.setor);
+            console.log('✓ Exibindo análise TIPO por SETOR:', data.freq_tipo_por_setor_top.setor);
             document.getElementById('sectionTipoSetor').style.display = 'block';
             
             const insightSetorTop = document.getElementById('insightSetorTop');
@@ -695,7 +710,12 @@
             
             tipoSetorHTML += '</tbody></table>';
             tabelaTipoSetor.innerHTML = tipoSetorHTML;
+            console.log('✓ Análise TIPO por SETOR renderizada');
+        } else {
+            console.log('✗ freq_tipo_por_setor_top não disponível');
         }
+
+        console.log('=== FIM DAS ANÁLISES ADICIONAIS ===');
     </script>
 </body>
 </html>
